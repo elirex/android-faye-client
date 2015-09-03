@@ -82,7 +82,7 @@ public class FayeClient {
                         websocketConnected = false;
                         fayeConnected = false;
                         if(listener != null && listener instanceof Listener) {
-                            listener.disconnectedFromServer(FayeClient.this);
+                            listener.onDisconnectedFromServer(FayeClient.this);
                         }
                         break;
                     case MESSAGE_ONMESSAGE:
@@ -235,7 +235,7 @@ public class FayeClient {
                 if(obj.optBoolean("successful")) {
                     clientId = obj.optString("clientId");
                     if(listener != null && listener instanceof Listener) {
-                        listener.connectedToServer(this);
+                        listener.onConnectedToServer(this);
                     }
                     connect();
                 } else {
@@ -253,7 +253,7 @@ public class FayeClient {
                     fayeConnected = false;
                     closeWebSocketConnection();
                     if(listener != null && listener instanceof Listener) {
-                        listener.disconnectedFromServer(this);
+                        listener.onDisconnectedFromServer(this);
                     }
                 } else {
                     Log.e(LOG_TAG, "onMessage(): Error disconnecting from faye");
@@ -276,7 +276,7 @@ public class FayeClient {
                 if(channels.contains(obj.optString("channel"))) {
                     if(obj.optString("data") != null) {
                         if(listener != null && listener instanceof Listener) {
-                            listener.messageReceived(this, obj.optString("data"));
+                            listener.onMessageReceived(this, obj.optString("data"));
                         }
                     }
                 } else {
@@ -290,9 +290,9 @@ public class FayeClient {
 
     /* Interface */
     public interface Listener {
-        public void connectedToServer(FayeClient fc);
-        public void disconnectedFromServer(FayeClient fc);
-        public void messageReceived(FayeClient fc, String msg);
+        public void onConnectedToServer(FayeClient fc);
+        public void onDisconnectedFromServer(FayeClient fc);
+        public void onMessageReceived(FayeClient fc, String msg);
     }
 
 }
