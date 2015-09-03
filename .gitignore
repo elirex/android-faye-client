@@ -1,0 +1,36 @@
+# Built application files
+*.apk
+*.ap_
+
+# Files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# Generated files
+bin/
+gen/
+
+# Gradle generated files
+.gradle
+build/
+/*/build/
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+# Log filse
+*.log
+
+# Android Studio
+.idea
+*.iml
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.ehthumbs.db
+.Thumbs.db
