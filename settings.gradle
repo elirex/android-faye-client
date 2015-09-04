@@ -1,1 +1,1 @@
-include ':app', ':fayeclient'
+include ':fayeclient'

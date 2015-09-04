@@ -1,11 +1,15 @@
 package com.elirex.fayeclient;
 
+import android.app.ActivityManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,24 +28,45 @@ public class FayeService extends Service {
     private static String AUTH_TOKEN;
     private static HashSet<String> channels;
 
-    private FayeServiceBinder binder;
+    FayeServiceBinder binder;
 
     private FayeClient fayeClient;
-    private ArrayList<Listener> listeners;
+    private ArrayList<Listener> listeners = new ArrayList<Listener>();
 
     @Override
     public void onCreate() {
         super.onCreate();
         binder = new FayeServiceBinder();
+        startFayeClient();
+        Log.i(LOG_TAG, "Faye Service Starts: " + this);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopFayeClient();
+        Log.i(LOG_TAG, "Faye Service Stopped: " + this);
     }
 
     public static void initFayeService(String host, int port, String path,
                                 String accessToken, String authToken) {
+        initFayeService(host, port, path);
+        ACCESS_TOKEN = accessToken;
+        AUTH_TOKEN = authToken;
+    }
+
+    public static void initFayeService(String host, int port, String path, String... channel) {
+        initFayeService(host, port, path);
+        if(channels == null) {
+            channels = new HashSet<String>();
+        }
+        channels.addAll(Arrays.asList(channel));
+    }
+
+    public static void initFayeService(String host, int port, String path) {
         SERVER_HOST = host;
         SERVER_PORT = String.valueOf(port);
         SERVER_PATH = path;
-        ACCESS_TOKEN = accessToken;
-        AUTH_TOKEN = authToken;
     }
 
     public static void addChannel(String channel) {
@@ -70,6 +95,51 @@ public class FayeService extends Service {
         }
     }
 
+    public static ServiceConnection bind(Context context,
+                                         final Listener listener) {
+        ActivityManager manager = (ActivityManager) context
+                .getSystemService(Context.ACTIVITY_SERVICE);
+        for(ActivityManager.RunningServiceInfo service : manager
+                .getRunningServices(Integer.MAX_VALUE)) {
+            if(FayeService.class.getName()
+                    .equals(service.service.getClassName())) {
+                break;
+            }
+        }
+        /*
+        ServiceConnection connection = new ServiceConnection() {
+
+            private FayeService service;
+            private FayeClient client;
+
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                if(service != null) {
+
+                }
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+
+            }
+
+            public FayeClient getClient() {
+                return client;
+            }
+        };
+        */
+        FayeServiceConnection connection = new FayeServiceConnection(listener);
+        context.bindService(new Intent(context, FayeService.class),
+                connection, Context.BIND_AUTO_CREATE);
+        return connection;
+    }
+
+    public static void unbind(Context context, ServiceConnection connection) {
+        connection.onServiceDisconnected(null);
+        context.unbindService(connection);
+    }
+
     private FayeClient.Listener fayeClientListener = new FayeClient.Listener() {
         @Override
         public void onConnectedToServer(FayeClient fc) {
@@ -82,6 +152,7 @@ public class FayeService extends Service {
         @Override
         public void onDisconnectedFromServer(FayeClient fc) {
             Log.i(LOG_TAG, "Disconnected form server");
+            fc.connectToServer();
         }
 
         @Override
@@ -93,10 +164,50 @@ public class FayeService extends Service {
         }
     };
 
+    @Override
     public IBinder onBind(Intent intent) {
+        if(binder == null) {
+            binder = new FayeServiceBinder();
+        }
         return binder;
     }
 
+    protected void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    protected void removeListener(Listener listener) {
+        listeners.remove(listener);
+        if(listeners.size() == 0) {
+            stopSelf();
+        }
+    }
+
+    private void startFayeClient() {
+        fayeClient = new FayeClient(SERVER_HOST + ":" + SERVER_PORT
+                + SERVER_PATH, AUTH_TOKEN, ACCESS_TOKEN);
+        for(String channel : channels) {
+            fayeClient.addChannel(channel);
+        }
+        fayeClient.setListener(fayeClientListener);
+        fayeClient.connectToServer();
+    }
+
+    private void stopFayeClient() {
+        HandlerThread thread = new HandlerThread("FayeTerminateHandlerThread");
+        thread.start();
+        new Handler(thread.getLooper()).post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (fayeClient.isWebsocketConnected()) {
+                    fayeClient.disconnectFromServer();
+                    channels.clear();
+                }
+
+            }
+        });
+    }
 
     public class FayeServiceBinder extends Binder {
         public FayeService getService() {

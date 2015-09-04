@@ -57,10 +57,7 @@ public class FayeClient {
         this.authToken = authToken;
         this.accessToken = accessToken;
         channels = new HashSet<String>();
-        if(channel.length() > 0) {
-            channels.add(channel);
-        }
-
+        channels.add(channel);
     }
 
     {
@@ -132,21 +129,42 @@ public class FayeClient {
     }
 
     public void subscribeToChannel(String channel) {
-        subscribe(channel);
-        channels.add(channel);
+        if(!channels.contains(channel)) {
+            subscribe(channel);
+            channels.add(channel);
+        }
+    }
+
+    public void subscribeToChannels(String... channels) {
+        for(String channel : channels) {
+            subscribe(channel);
+        }
     }
 
     public void unsubscribeFromChannel(String channel) {
-        unsubscribe(channel);
-        channels.remove(channel);
+        if(channels.contains(channel)) {
+            unsubscribe(channel);
+            channels.remove(channel);
+        }
+    }
+
+    public void unsubscribeFromChannels(String... channels) {
+        for(String channel : channels) {
+            unsubscribe(channel);
+        }
+    }
+
+    public void unsubscribeFromAllChannels() {
+        for(String channel : channels) {
+            unsubscribe(channel);
+        }
     }
 
     /* Private Methods */
-
     private Socket getSSLWebSocket() {
         SSLContext sslContext = null;
         try {
-            sslContext = SSLContext.getInstance("TLS");
+            sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, null, null);
             SSLSocketFactory factory = sslContext.getSocketFactory();
             return factory.createSocket();
@@ -200,7 +218,6 @@ public class FayeClient {
                 .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/unsubscribe\",\"ext\":{\"accessToken\":\"%s\"}}",
                         clientId, channel, accessToken);
         webSocket.send(unsubscribe);
-
     }
 
     private void connect() {
@@ -286,7 +303,6 @@ public class FayeClient {
             }
         }
     }
-
 
     /* Interface */
     public interface Listener {

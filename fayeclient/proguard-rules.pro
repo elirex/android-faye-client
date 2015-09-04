@@ -15,3 +15,14 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-keep class com.elirex.fayeclient.FayeClient.** {
+    *;
+}
+
+-keep class com.elirex.fayeclient.FayeServcie.** {
+    *;
+}
+
+-keep clase com.elirex.fayeclient.FayeServcieConnection.** {
+    *;
+}
