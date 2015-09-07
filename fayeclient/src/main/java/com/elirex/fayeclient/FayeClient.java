@@ -43,7 +43,7 @@ public class FayeClient {
     private String accessToken = "";
     private String clientId = "";
     private boolean fayeConnected = false;
-    private boolean websocketConnected = false;
+    private boolean webSocketConnected = false;
 
     private Handler messageHandler;
 
@@ -70,13 +70,13 @@ public class FayeClient {
                 switch(msg.what) {
                     case MESSAGE_ONOPEN:
                         Log.i(LOG_TAG, "onOpen() executed");
-                        websocketConnected = true;
+                        webSocketConnected = true;
                         handShake();
                         break;
 
                     case MESSAGE_ONCLOSE:
                         Log.i(LOG_TAG, "onClosed() executed");
-                        websocketConnected = false;
+                        webSocketConnected = false;
                         fayeConnected = false;
                         if(listener != null && listener instanceof FayeClientListener) {
                             listener.onDisconnectedFromServer(FayeClient.this);
@@ -109,7 +109,7 @@ public class FayeClient {
     }
 
     public boolean isWebsocketConnected() {
-        return websocketConnected;
+        return webSocketConnected;
     }
 
     public boolean isFayeConnected() {
@@ -122,6 +122,7 @@ public class FayeClient {
 
     public void disconnectFromServer() {
         for(String channel : channels) {
+            Log.d(LOG_TAG, "UnSubscribe:" + channel);
             unsubscribe(channel);
         }
         channels.clear();
@@ -129,6 +130,9 @@ public class FayeClient {
     }
 
     public void subscribeToChannel(String channel) {
+        for(String ch : channels) {
+            Log.d(LOG_TAG, "channel:" + channel);
+        }
         if(!channels.contains(channel)) {
             subscribe(channel);
             channels.add(channel);
@@ -235,6 +239,7 @@ public class FayeClient {
     }
 
     private void parseFayeMessage(String message) {
+        Log.d(LOG_TAG, "onMessage:" + message);
         JSONArray arr = null;
         JSONObject obj = null;
 
@@ -277,6 +282,7 @@ public class FayeClient {
                 }
             } else if(obj.optString("channel").equals(SUBSCRIBE_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
+                    fayeConnected = true;
                     Log.i(LOG_TAG, String.format(
                             "Subscribed to channel %s on fay",
                             obj.optString("subscription")));
