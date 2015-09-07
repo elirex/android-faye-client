@@ -13,6 +13,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.channels.NotYetConnectedException;
+import java.util.Date;
 import java.util.HashSet;
 
 import javax.net.ssl.SSLContext;
@@ -161,6 +162,33 @@ public class FayeClient {
     public void unsubscribeFromAllChannels() {
         for(String channel : channels) {
             unsubscribe(channel);
+        }
+    }
+
+    public void publish(String channel, String content) {
+        long number = (new Date()).getTime();
+        String messageId = String.format("msg_%d_%d",
+                new Object[]{Long.valueOf(number), Integer.valueOf(1)});
+        JSONObject extension = new JSONObject();
+
+        try {
+            extension.put("accessToken", accessToken);
+            extension.put("authToken", "yrgXDRY8U9cvQCVksCqALXRbywnMViRTS210ISQf");
+        } catch (JSONException var9) {
+            var9.printStackTrace();
+            return;
+        }
+
+        try {
+            JSONObject ex = new JSONObject();
+            ex.put("channel", channel);
+            ex.put("clientId", clientId);
+            ex.put("data", content);
+            ex.put("id", messageId);
+            ex.put("ext", extension);
+            this.webSocket.send(ex.toString());
+        } catch (JSONException var8) {
+            Log.e("PushClient", "Handshake Failed", var8);
         }
     }
 
