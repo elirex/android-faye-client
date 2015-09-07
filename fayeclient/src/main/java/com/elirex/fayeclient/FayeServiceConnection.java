@@ -15,9 +15,9 @@ public class FayeServiceConnection implements ServiceConnection{
 
     private FayeService service;
     private FayeClient client;
-    private FayeService.Listener listener;
+    private FayeServiceListener listener;
 
-    public FayeServiceConnection(FayeService.Listener listener) {
+    public FayeServiceConnection(FayeServiceListener listener) {
        this.listener = listener;
     }
 

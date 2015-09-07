@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -31,7 +32,7 @@ public class FayeService extends Service {
     FayeServiceBinder binder;
 
     private FayeClient fayeClient;
-    private ArrayList<Listener> listeners = new ArrayList<Listener>();
+    private ArrayList<FayeServiceListener> listeners = new ArrayList<FayeServiceListener>();
 
     @Override
     public void onCreate() {
@@ -96,7 +97,7 @@ public class FayeService extends Service {
     }
 
     public static ServiceConnection bind(Context context,
-                                         final Listener listener) {
+                                         final FayeServiceListener listener) {
         ActivityManager manager = (ActivityManager) context
                 .getSystemService(Context.ACTIVITY_SERVICE);
         for(ActivityManager.RunningServiceInfo service : manager
@@ -140,7 +141,7 @@ public class FayeService extends Service {
         context.unbindService(connection);
     }
 
-    private FayeClient.Listener fayeClientListener = new FayeClient.Listener() {
+    private FayeClientListener fayeClientListener = new FayeClientListener() {
         @Override
         public void onConnectedToServer(FayeClient fc) {
             Log.i(LOG_TAG, "Connect to server");
@@ -158,7 +159,7 @@ public class FayeService extends Service {
         @Override
         public void onMessageReceived(FayeClient fc, String msg) {
             Log.i(LOG_TAG, "Message from server: " + msg);
-            for(Listener listener : listeners) {
+            for(FayeServiceListener listener : listeners) {
                 listener.onMessageReceived(fc, msg);
             }
         }
@@ -172,11 +173,11 @@ public class FayeService extends Service {
         return binder;
     }
 
-    protected void addListener(Listener listener) {
+    protected void addListener(FayeServiceListener listener) {
         listeners.add(listener);
     }
 
-    protected void removeListener(Listener listener) {
+    protected void removeListener(FayeServiceListener listener) {
         listeners.remove(listener);
         if(listeners.size() == 0) {
             stopSelf();
@@ -217,11 +218,6 @@ public class FayeService extends Service {
         public FayeClient getClient() {
             return fayeClient;
         }
-    }
-
-    /* Interface */
-    public interface Listener {
-        public void onMessageReceived(FayeClient fc, String msg);
     }
 
 }

@@ -36,7 +36,7 @@ public class FayeClient {
     private final int MESSAGE_ONMESSAGE = 3;
 
     private WebSocket webSocket = null;
-    private Listener listener = null;
+    private FayeClientListener listener = null;
     private HashSet<String> channels;
     private String serverUrl = "";
     private String authToken = "";
@@ -78,7 +78,7 @@ public class FayeClient {
                         Log.i(LOG_TAG, "onClosed() executed");
                         websocketConnected = false;
                         fayeConnected = false;
-                        if(listener != null && listener instanceof Listener) {
+                        if(listener != null && listener instanceof FayeClientListener) {
                             listener.onDisconnectedFromServer(FayeClient.this);
                         }
                         break;
@@ -96,11 +96,11 @@ public class FayeClient {
     }
 
     /* Public Methods */
-    public Listener getListener() {
+    public FayeClientListener getListener() {
         return listener;
     }
 
-    public void setListener(Listener listener) {
+    public void setListener(FayeClientListener listener) {
         this.listener = listener;
     }
 
@@ -251,7 +251,7 @@ public class FayeClient {
             if(obj.optString("channel").equals(HANDSHAKE_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
                     clientId = obj.optString("clientId");
-                    if(listener != null && listener instanceof Listener) {
+                    if(listener != null && listener instanceof FayeClientListener) {
                         listener.onConnectedToServer(this);
                     }
                     connect();
@@ -269,7 +269,7 @@ public class FayeClient {
                 if(obj.optBoolean("successful")) {
                     fayeConnected = false;
                     closeWebSocketConnection();
-                    if(listener != null && listener instanceof Listener) {
+                    if(listener != null && listener instanceof FayeClientListener) {
                         listener.onDisconnectedFromServer(this);
                     }
                 } else {
@@ -292,7 +292,7 @@ public class FayeClient {
             } else {
                 if(channels.contains(obj.optString("channel"))) {
                     if(obj.optString("data") != null) {
-                        if(listener != null && listener instanceof Listener) {
+                        if(listener != null && listener instanceof FayeClientListener) {
                             listener.onMessageReceived(this, obj.optString("data"));
                         }
                     }
@@ -302,13 +302,6 @@ public class FayeClient {
                 }
             }
         }
-    }
-
-    /* Interface */
-    public interface Listener {
-        public void onConnectedToServer(FayeClient fc);
-        public void onDisconnectedFromServer(FayeClient fc);
-        public void onMessageReceived(FayeClient fc, String msg);
     }
 
 }

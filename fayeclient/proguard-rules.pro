@@ -15,14 +15,11 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
--keep class com.elirex.fayeclient.FayeClient.** {
-    *;
-}
 
--keep class com.elirex.fayeclient.FayeServcie.** {
-    *;
-}
-
--keep clase com.elirex.fayeclient.FayeServcieConnection.** {
-    *;
-}
+# -libraryjars libs/java-WebSocket-1.2.1.jar
+-dontwarn org.java_websocket.**
+-keep class org.java_websocket.** { *; }
+-keep interface org.java_websocket.** { *; }
+-keep class com.elirex.fayeclient.** { *; }
+-keep interface com.elirex.fayeclient.** { *; }
+-keepattributes Signature

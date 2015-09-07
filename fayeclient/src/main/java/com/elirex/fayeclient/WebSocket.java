@@ -12,7 +12,7 @@ import java.net.URI;
 /**
  * @author Sheng-Yuan Wang (2015/9/3).
  */
-class WebSocket extends WebSocketClient {
+public class WebSocket extends WebSocketClient {
 
     private static final String LOG_TAG = WebSocket.class.getSimpleName();
 
