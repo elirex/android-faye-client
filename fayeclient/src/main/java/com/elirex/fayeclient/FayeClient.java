@@ -58,7 +58,9 @@ public class FayeClient {
         this.authToken = authToken;
         this.accessToken = accessToken;
         channels = new HashSet<String>();
-        channels.add(channel);
+        if(!channels.contains(channel)) {
+            channels.add(channel);
+        }
     }
 
     {
@@ -131,13 +133,8 @@ public class FayeClient {
     }
 
     public void subscribeToChannel(String channel) {
-        for(String ch : channels) {
-            Log.d(LOG_TAG, "channel:" + channel);
-        }
-        if(!channels.contains(channel)) {
-            subscribe(channel);
-            channels.add(channel);
-        }
+        channels.add(channel);
+        subscribe(channel);
     }
 
     public void subscribeToChannels(String... channels) {
@@ -173,7 +170,8 @@ public class FayeClient {
 
         try {
             extension.put("accessToken", accessToken);
-            extension.put("authToken", "yrgXDRY8U9cvQCVksCqALXRbywnMViRTS210ISQf");
+            // extension.put("authToken", "yrgXDRY8U9cvQCVksCqALXRbywnMViRTS210ISQf");
+            extension.put("authToken", authToken);
         } catch (JSONException var9) {
             var9.printStackTrace();
             return;

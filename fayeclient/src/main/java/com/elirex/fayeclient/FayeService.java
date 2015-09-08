@@ -57,7 +57,11 @@ public class FayeService extends Service {
         if(channels == null) {
             channels = new HashSet<String>();
         }
-        channels.addAll(Arrays.asList(channel));
+        for(String ch : channel) {
+            if(!channels.contains(ch)) {
+                channels.add(ch);
+            }
+        }
     }
 
     public static void initFayeService(String host, int port, String path) {
@@ -104,33 +108,35 @@ public class FayeService extends Service {
             }
         }
 
-        ServiceConnection connection = new ServiceConnection() {
+        // ServiceConnection connection = new ServiceConnection() {
 
-            private FayeService service;
-            private FayeClient client;
+        //     private FayeService service;
+        //     private FayeClient client;
 
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                FayeServiceBinder binder = ((FayeServiceBinder) iBinder);
-                service = binder.getService();
-                client = binder.getClient();
-                service.addListener(listener);
-                Log.i(LOG_TAG, "Faye Service connected.");
-            }
+        //     @Override
+        //     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        //         FayeServiceBinder binder = ((FayeServiceBinder) iBinder);
+        //         service = binder.getService();
+        //         client = binder.getClient();
+        //         service.addListener(listener);
+        //         Log.i(LOG_TAG, "Faye Service connected.");
+        //     }
 
-            @Override
-            public void onServiceDisconnected(ComponentName componentName) {
-                if(service != null)  {
-                    service.removeListener(listener);
-                    service = null;
-                    Log.i(LOG_TAG, "Faye service disconnected.");
-                }
-            }
+        //     @Override
+        //     public void onServiceDisconnected(ComponentName componentName) {
+        //         if(service != null)  {
+        //             service.removeListener(listener);
+        //             service = null;
+        //             Log.i(LOG_TAG, "Faye service disconnected.");
+        //         }
+        //     }
 
-            public FayeClient getClient() {
-                return client;
-            }
-        };
+        //     public FayeClient getClient() {
+        //         return client;
+        //     }
+        // };
+
+        FayeServiceConnection connection = new FayeServiceConnection(listener);
 
         context.bindService(new Intent(context, FayeService.class),
                 connection, Context.BIND_AUTO_CREATE);
@@ -146,6 +152,7 @@ public class FayeService extends Service {
         @Override
         public void onConnectedToServer(FayeClient fc) {
             Log.i(LOG_TAG, "Connect to server");
+            Log.d(LOG_TAG, "FayeService channels.size() = " + channels.size());
             for(String channel : channels) {
                 Log.d(LOG_TAG, "Channel: " + channel);
                 fc.subscribeToChannel(channel);
