@@ -48,6 +48,11 @@ public class FayeClient {
 
     private Handler messageHandler;
 
+    // public FayeClient(String url, MetaMessage meta) {
+    //     serverUrl = url;
+    //     mMetaMessage = meta;
+    // }
+
     public FayeClient(String url, String authToken, String accessToken) {
         this(url, authToken, accessToken, "");
     }
@@ -230,10 +235,16 @@ public class FayeClient {
     }
 
     private void handShake() {
-        String handshake = String
-                .format("{\"supportedConnectionTypes\":[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"],\"minimumVersion\":\"1.0beta\",\"version\":\"1.0\",\"channel\":\"/meta/handshake\", \"ext\":{\"accessToken\":\"%s\"}}",
-                        accessToken);
+         String handshake = String
+                 .format("{\"supportedConnectionTypes\":[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"],\"minim// umVersion\":\"1.0beta\",\"version\":\"1.0\",\"channel\":\"/meta/handshake\", \"ext\":{\"accessToken\":\"%s\"}}",
+                         accessToken);
         webSocket.send(handshake);
+        // try {
+        //     String handshake = mMetaMessage.handShake();
+        //     webSocket.send(handshake);
+        // } catch (JSONException e) {
+        //     Log.e(LOG_TAG, "HandShake message error", e);
+        // }
     }
 
     private void subscribe(String channel) {
@@ -241,13 +252,25 @@ public class FayeClient {
                 .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/subscribe\", \"ext\":{\"accessToken\":\"%s\"}}",
                         clientId, channel, accessToken);
         webSocket.send(subscribe);
+        // try {
+        //     String subscribe = mMetaMessage.subscribe(channel);
+        //     webSocket.send(subscribe);
+        // } catch (JSONException e) {
+        //     Log.e(LOG_TAG, "Subscribe message error", e);
+        // }
     }
 
     private void unsubscribe(String channel) {
         String unsubscribe = String
-                .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/unsubscribe\",\"ext\":{\"accessToken\":\"%s\"}}",
+               .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/unsubscribe\",\"ext\":{\"accessToken\":\"%s\"}}",
                         clientId, channel, accessToken);
         webSocket.send(unsubscribe);
+        // try {
+        //     String unsubscribe = mMetaMessage.subscribe(channel);
+        //     webSocket.send(unsubscribe);
+        // } catch (JSONException e) {
+        //     Log.e(LOG_TAG, "Unsubscribe message error", e);
+        // }
     }
 
     private void connect() {

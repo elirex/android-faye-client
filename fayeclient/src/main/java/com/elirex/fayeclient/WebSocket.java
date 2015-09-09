@@ -16,9 +16,10 @@ public class WebSocket extends WebSocketClient {
 
     private static final String LOG_TAG = WebSocket.class.getSimpleName();
 
-    private final int MESSAGE_ONOPEN = 1;
-    private final int MESSAGE_ONCLOSE = 2;
-    private final int MESSAGE_ONMESSAGE = 3;
+    public static final int MESSAGE_ONOPEN = 1;
+    public static final int MESSAGE_ONCLOSE = 2;
+    public static final int MESSAGE_ONMESSAGE = 3;
+    public static final int MESSAGE_ONERROR = 4;
 
     private Handler messageHandler;
 

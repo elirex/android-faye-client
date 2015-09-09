@@ -25,24 +25,25 @@ public class MetaMessage {
     private static final String DISCONNECT_CHANNEL = "/meta/disconnect";
     private static final String SUBSCRIBE_CHANNEL = "/meta/subscribe";
     private static final String UNSUBSCRIBE_CHANNEL = "/meta/unsubscribe";
-    private static final String PUBLISH_CHANNEL = "";
 
+    private String mVersion = "1.0";
+    private String mMinimumVersion = "1.0beta";
+    private String mClientId;
+    private String mSupportConnectionTypes = "[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"]";
+    private String mConnectionType = "long-polling";
 
-    private String version = "1.0";
-    private String minimumVersion = "1.0beta";
-    private String clientId;
-    private String supportConnectionTypes = "[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"]";
-    private String connectionType = "long-polling";
-
-
-    private String handShakeExt = "";
-    private String handShakeId = "";
-    private String connectExt = "";
-    private String connectId = "";
-    private String disconnectExt = "";
-    private String disconnectId = "";
-    private String subscribeExt = "";
-    private String subscribeId = "";
+    private String mHandShakeExt;
+    private String mHandShakeId;
+    private String mConnectExt;
+    private String mConnectId;
+    private String mDisconnectExt;
+    private String mDisconnectId;
+    private String mSubscribeExt;
+    private String mSubscribeId;
+    private String mUnsubscribeExt;
+    private String mUnsubscribeId;
+    private String mPublishExt;
+    private String mPublishId;
 
     // HandShark
     public void setSupportConnectionTypes(String... support) {
@@ -52,102 +53,164 @@ public class MetaMessage {
             for(String type : support) {
                 arr.put(type);
             }
-            supportConnectionTypes = arr.toString();
+            mSupportConnectionTypes = arr.toString();
         }
     }
 
     public String handShake() throws JSONException {
         JSONObject json = new JSONObject();
         json.put(KEY_CHANNEL, HANDSHAKE_CHANNEL)
-                .put(KEY_VERSION, minimumVersion)
-                .put(KEY_VERSION, version);
-        if(handShakeExt != null) {
-            json.put(KEY_EXT, handShakeExt);
+                .put(KEY_VERSION, mMinimumVersion)
+                .put(KEY_VERSION, mVersion);
+        if(mHandShakeExt != null) {
+            json.put(KEY_EXT, mHandShakeExt);
         }
-        if(handShakeId != null) {
-            json.put(KEY_ID, handShakeId);
+        if(mHandShakeId != null) {
+            json.put(KEY_ID, mHandShakeId);
         }
         return json.toString();
     }
 
     public void setHandshakeExt(String ext) {
-        handShakeExt = ext;
+        mHandShakeExt = ext;
     }
 
     public void setHandShakeId(String id) {
-        handShakeId = id;
+        mHandShakeId = id;
     }
 
     // Connect
     public void setClient(String id) {
-       clientId = id;
+       mClientId = id;
     }
 
     public void setConnectionType(String type) {
-        connectionType = type;
+        mConnectionType = type;
     }
 
     public void setConnectExt(String ext) {
-        connectExt = ext;
+        mConnectExt = ext;
     }
 
     public void setConnectId(String id) {
-        connectId = id;
+        mConnectId = id;
     }
 
     public String connect() throws JSONException {
         JSONObject json = new JSONObject();
         json.put(KEY_CHANNEL, CONNECT_CHANNEL)
-                .put(KEY_CLIENT_ID, clientId)
-                .put(KEY_CONNECTION_TYPE, connectionType);
+                .put(KEY_CLIENT_ID, mClientId)
+                .put(KEY_CONNECTION_TYPE, mConnectionType);
 
-        if(connectExt != null) {
-            json.put(KEY_EXT, connectExt);
+        if(mConnectExt != null) {
+            json.put(KEY_EXT, mConnectExt);
         }
-        if(connectId != null) {
-            json.put(KEY_ID, connectId);
+        if(mConnectId != null) {
+            json.put(KEY_ID, mConnectId);
         }
         return json.toString();
     }
 
     // Disconnect
     public void setDisconnectExt(String ext) {
-       disconnectExt = ext;
+       mDisconnectExt = ext;
     }
 
     public void setDisconnectId(String id) {
-        disconnectId = id;
+        mDisconnectId = id;
     }
 
     public String disconnectExt(String ext) throws JSONException {
         JSONObject json = new JSONObject();
         json.put(KEY_CHANNEL, DISCONNECT_CHANNEL)
-                .put(KEY_CLIENT_ID, clientId);
+                .put(KEY_CLIENT_ID, mClientId);
 
-        if(disconnectExt != null) {
-            json.put(KEY_EXT, disconnectExt);
+        if(mDisconnectExt != null) {
+            json.put(KEY_EXT, mDisconnectExt);
         }
 
-        if(disconnectId != null) {
-            json.put(KEY_ID, disconnectId);
+        if(mDisconnectId != null) {
+            json.put(KEY_ID, mDisconnectId);
         }
         return json.toString();
     }
 
     // Subscribe
     public void setSubscribeExt(String ext) {
-        subscribeExt = ext;
+        mSubscribeExt = ext;
     }
 
     public void setSubscribeId(String id) {
-        subscribeId = id;
+        mSubscribeId = id;
     }
 
     public String subscribe(String subscription) throws JSONException {
         JSONObject json = new JSONObject();
-        json.put(KEY_CHANNEL, SUBSCRIBE_CHANNEL);
-        return json.toString();
+        json.put(KEY_CHANNEL, SUBSCRIBE_CHANNEL)
+                .put(KEY_CLIENT_ID, mClientId)
+                .put(KEY_SUBSCRIPTION, subscription);
 
+        if(mSubscribeExt != null) {
+            json.put(KEY_EXT, mSubscribeExt);
+        }
+
+        if(mSubscribeId != null) {
+            json.put(KEY_ID, mSubscribeId);
+        }
+
+        return json.toString();
+    }
+
+    // Unsubscribe
+    public void setUnsubscribeExt(String ext) {
+        mUnsubscribeExt = ext;
+    }
+
+    public void setUnsubscribeId(String id) {
+        mUnsubscribeId = id;
+    }
+
+    public String unsubscribe(String subscription) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put(KEY_CHANNEL, UNSUBSCRIBE_CHANNEL)
+                .put(KEY_CLIENT_ID, mClientId)
+                .put(KEY_SUBSCRIPTION, subscription);
+
+        if (mUnsubscribeExt != null) {
+            json.put(KEY_EXT, mUnsubscribeExt);
+        }
+        if (mUnsubscribeId != null) {
+            json.put(KEY_EXT, mUnsubscribeId);
+        }
+        return json.toString();
+    }
+
+    // Publish
+    public void setPublishExt(String ext) {
+        mPublishExt = ext;
+    }
+
+    public void setPublishId(String id) {
+        mPublishId = id;
+    }
+
+    public String publish(String channel, String data) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put(KEY_CHANNEL, channel)
+                .put(KEY_DATA, data);
+
+        if(mClientId != null) {
+            json.put(KEY_CLIENT_ID, mClientId);
+        }
+
+        if(mPublishExt != null) {
+            json.put(KEY_EXT, mPublishExt);
+        }
+
+        if(mPublishId != null) {
+            json.put(KEY_ID, mPublishId);
+        }
+        return json.toString();
     }
 
 }

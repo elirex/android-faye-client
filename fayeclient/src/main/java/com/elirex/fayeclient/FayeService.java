@@ -108,35 +108,29 @@ public class FayeService extends Service {
             }
         }
 
-        // ServiceConnection connection = new ServiceConnection() {
+        ServiceConnection connection = new ServiceConnection() {
 
-        //     private FayeService service;
-        //     private FayeClient client;
+            private FayeService service;
 
-        //     @Override
-        //     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-        //         FayeServiceBinder binder = ((FayeServiceBinder) iBinder);
-        //         service = binder.getService();
-        //         client = binder.getClient();
-        //         service.addListener(listener);
-        //         Log.i(LOG_TAG, "Faye Service connected.");
-        //     }
+            @Override
+            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+                FayeServiceBinder binder = ((FayeServiceBinder) iBinder);
+                service = binder.getService();
+                service.addListener(listener);
+                Log.i(LOG_TAG, "Faye Service connected.");
+            }
 
-        //     @Override
-        //     public void onServiceDisconnected(ComponentName componentName) {
-        //         if(service != null)  {
-        //             service.removeListener(listener);
-        //             service = null;
-        //             Log.i(LOG_TAG, "Faye service disconnected.");
-        //         }
-        //     }
+            @Override
+            public void onServiceDisconnected(ComponentName componentName) {
+                if(service != null)  {
+                    service.removeListener(listener);
+                    service = null;
+                    Log.i(LOG_TAG, "Faye service disconnected.");
+                }
+            }
+        };
 
-        //     public FayeClient getClient() {
-        //         return client;
-        //     }
-        // };
-
-        FayeServiceConnection connection = new FayeServiceConnection(listener);
+        // FayeServiceConnection connection = new FayeServiceConnection(listener);
 
         context.bindService(new Intent(context, FayeService.class),
                 connection, Context.BIND_AUTO_CREATE);
