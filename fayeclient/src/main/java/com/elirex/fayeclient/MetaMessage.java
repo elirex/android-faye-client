@@ -15,7 +15,7 @@ public class MetaMessage {
     private static final String KEY_SUPPORT_CONNECTION_TYPES = "supportedConnectionTypes";
 
     private static final String KEY_CLIENT_ID = "clientId";
-    private static final String KEY_SUBSCRIPTION = "subscriptoin";
+    private static final String KEY_SUBSCRIPTION = "subscription";
     private static final String KEY_CONNECTION_TYPE = "connectionType";
     private static final String KEY_DATA = "data";
     private static final String KEY_EXT = "ext";
@@ -30,7 +30,7 @@ public class MetaMessage {
     private String mVersion = "1.0";
     private String mMinimumVersion = "1.0beta";
     private String mClientId;
-    private String mSupportConnectionTypes;
+    private JSONArray mSupportConnectionTypes;
     private String mConnectionType = "long-polling";
 
     private String mHandShakeExt;
@@ -54,7 +54,7 @@ public class MetaMessage {
             for(String type : support) {
                 arr.put(type);
             }
-            mSupportConnectionTypes = arr.toString();
+            mSupportConnectionTypes = arr;
         }
     }
 
@@ -63,18 +63,36 @@ public class MetaMessage {
         json.put(KEY_CHANNEL, HANDSHAKE_CHANNEL)
                 .put(KEY_MIN_VERSION, mMinimumVersion)
                 .put(KEY_VERSION, mVersion);
-        JSONArray arr = new JSONArray();
-        arr.put("long-polling");
-        arr.put("callback-polling");
-        arr.put("iframe");
-        arr.put("websocket");
-
-        json.put(KEY_SUPPORT_CONNECTION_TYPES, arr);
-        if(mHandShakeExt != null) {
-            json.put(KEY_EXT, mHandShakeExt);
+        if(mSupportConnectionTypes == null) {
+            mSupportConnectionTypes = new JSONArray();
+            mSupportConnectionTypes.put("long-polling");
+            mSupportConnectionTypes.put("callback-polling");
+            mSupportConnectionTypes.put("iframe");
+            mSupportConnectionTypes.put("websocket");
         }
+        json.put(KEY_SUPPORT_CONNECTION_TYPES, mSupportConnectionTypes);
+        if(mHandShakeExt != null) {
+            JSONObject obj = isJSONObject(mHandShakeExt);
+            JSONArray arr = isJSONArray(mHandShakeExt);
+            if(obj != null) {
+                json.put(KEY_EXT, obj);
+            } else if(arr != null) {
+                json.put(KEY_EXT, arr);
+            } else {
+                json.put(KEY_EXT, mHandShakeExt);
+            }
+        }
+
         if(mHandShakeId != null) {
-            json.put(KEY_ID, mHandShakeId);
+            JSONObject obj = isJSONObject(mHandShakeId);
+            JSONArray arr = isJSONArray(mHandShakeId);
+            if(obj != null) {
+                json.put(KEY_ID, obj);
+            } else if(arr != null) {
+                json.put(KEY_ID, arr);
+            } else {
+                json.put(KEY_ID, mHandShakeId);
+            }
         }
         return json.toString();
     }
@@ -111,10 +129,26 @@ public class MetaMessage {
                 .put(KEY_CONNECTION_TYPE, mConnectionType);
 
         if(mConnectExt != null) {
-            json.put(KEY_EXT, mConnectExt);
+            JSONObject obj = isJSONObject(mConnectExt);
+            JSONArray arr = isJSONArray(mConnectExt);
+            if (obj != null) {
+                json.put(KEY_EXT, obj);
+            } else if (arr != null) {
+                json.put(KEY_EXT, arr);
+            } else {
+                json.put(KEY_EXT, mConnectExt);
+            }
         }
         if(mConnectId != null) {
-            json.put(KEY_ID, mConnectId);
+            JSONObject obj = isJSONObject(mConnectId);
+            JSONArray arr = isJSONArray(mConnectId);
+            if(obj != null) {
+                json.put(KEY_ID, obj);
+            } else if(arr != null) {
+                json.put(KEY_ID, arr);
+            } else {
+                json.put(KEY_ID, mConnectId);
+            }
         }
         return json.toString();
     }
@@ -133,12 +167,29 @@ public class MetaMessage {
         json.put(KEY_CHANNEL, DISCONNECT_CHANNEL)
                 .put(KEY_CLIENT_ID, mClientId);
 
+
         if(mDisconnectExt != null) {
-            json.put(KEY_EXT, mDisconnectExt);
+            JSONObject obj = isJSONObject(mDisconnectExt);
+            JSONArray arr = isJSONArray(mDisconnectExt);
+            if(obj != null) {
+                json.put(KEY_EXT, obj);
+            } else if(arr != null) {
+                json.put(KEY_EXT, arr);
+            } else {
+                json.put(KEY_EXT, mDisconnectExt);
+            }
         }
 
         if(mDisconnectId != null) {
-            json.put(KEY_ID, mDisconnectId);
+            JSONObject obj = isJSONObject(mDisconnectId);
+            JSONArray arr = isJSONArray(mDisconnectId);
+            if(obj != null) {
+                json.put(KEY_ID, obj);
+            } else if(arr != null) {
+                json.put(KEY_ID, arr);
+            } else {
+                json.put(KEY_ID, mDisconnectId);
+            }
         }
         return json.toString();
     }
@@ -159,11 +210,27 @@ public class MetaMessage {
                 .put(KEY_SUBSCRIPTION, subscription);
 
         if(mSubscribeExt != null) {
-            json.put(KEY_EXT, mSubscribeExt);
+            JSONObject obj = isJSONObject(mSubscribeExt);
+            JSONArray arr = isJSONArray(mSubscribeExt);
+            if(obj != null) {
+                json.put(KEY_EXT, obj);
+            } else if(arr != null) {
+                json.put(KEY_EXT, arr);
+            } else {
+                json.put(KEY_EXT, mSubscribeExt);
+            }
         }
 
         if(mSubscribeId != null) {
-            json.put(KEY_ID, mSubscribeId);
+            JSONObject obj = isJSONObject(mSubscribeId);
+            JSONArray arr = isJSONArray(mSubscribeId);
+            if(obj != null) {
+                json.put(KEY_ID, obj);
+            } else if(arr != null) {
+                json.put(KEY_ID, arr);
+            } else {
+                json.put(KEY_ID, mSubscribeId);
+            }
         }
 
         return json.toString();
@@ -185,10 +252,26 @@ public class MetaMessage {
                 .put(KEY_SUBSCRIPTION, subscription);
 
         if (mUnsubscribeExt != null) {
-            json.put(KEY_EXT, mUnsubscribeExt);
+            JSONObject obj = isJSONObject(mUnsubscribeExt);
+            JSONArray arr = isJSONArray(mUnsubscribeExt);
+            if(obj != null) {
+                json.put(KEY_EXT, obj);
+            } else if(arr != null) {
+                json.put(KEY_EXT, arr);
+            } else {
+                json.put(KEY_EXT, mUnsubscribeExt);
+            }
         }
         if (mUnsubscribeId != null) {
-            json.put(KEY_EXT, mUnsubscribeId);
+            JSONObject obj = isJSONObject(mUnsubscribeId);
+            JSONArray arr = isJSONArray(mUnsubscribeId);
+            if(obj != null) {
+                json.put(KEY_ID, obj);
+            } else if (arr != null) {
+                json.put(KEY_ID, arr);
+            } else {
+                json.put(KEY_ID, mUnsubscribeId);
+            }
         }
         return json.toString();
     }
@@ -207,6 +290,29 @@ public class MetaMessage {
         mDisconnectId = id;
         mSubscribeId = id;
         mUnsubscribeId = id;
+    }
+
+    private JSONObject isJSONObject(String context) {
+        if(context.startsWith("{")) {
+            try {
+                return new JSONObject(context);
+            } catch (JSONException e) {
+                return null;
+            }
+
+        }
+        return null;
+    }
+
+    private JSONArray isJSONArray(String content) {
+        if(content.startsWith("[")) {
+            try {
+                return new JSONArray(content);
+            } catch (JSONException e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     // Publish
