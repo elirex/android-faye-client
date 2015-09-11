@@ -43,8 +43,6 @@ public class MetaMessage {
     private String mSubscribeId;
     private String mUnsubscribeExt;
     private String mUnsubscribeId;
-    private String mPublishExt;
-    private String mPublishId;
 
     // HandShark
     public void setSupportConnectionTypes(String... support) {
@@ -292,6 +290,42 @@ public class MetaMessage {
         mUnsubscribeId = id;
     }
 
+    // Publish
+    public String publish(String channel, String data, String ext, String id) throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put(KEY_CHANNEL, channel)
+                .put(KEY_DATA, data);
+
+        if(mClientId != null) {
+            json.put(KEY_CLIENT_ID, mClientId);
+        }
+
+        if(ext != null) {
+            JSONObject obj = isJSONObject(ext);
+            JSONArray arr = isJSONArray(ext);
+            if(obj != null) {
+                json.put(KEY_EXT, obj);
+            } else if(arr != null) {
+                json.put(KEY_EXT, arr);
+            } else {
+                json.put(KEY_EXT, ext);
+            }
+        }
+
+        if(id != null) {
+            JSONObject obj = isJSONObject(id);
+            JSONArray arr = isJSONArray(id);
+            if(obj != null) {
+                json.put(KEY_ID, obj);
+            } else if(arr != null) {
+                json.put(KEY_ID, arr);
+            } else {
+                json.put(KEY_ID, id);
+            }
+        }
+        return json.toString();
+    }
+
     private JSONObject isJSONObject(String context) {
         if(context.startsWith("{")) {
             try {
@@ -313,34 +347,6 @@ public class MetaMessage {
             }
         }
         return null;
-    }
-
-    // Publish
-    public void setPublishExt(String ext) {
-        mPublishExt = ext;
-    }
-
-    public void setPublishId(String id) {
-        mPublishId = id;
-    }
-
-    public String publish(String channel, String data) throws JSONException {
-        JSONObject json = new JSONObject();
-        json.put(KEY_CHANNEL, channel)
-                .put(KEY_DATA, data);
-
-        if(mClientId != null) {
-            json.put(KEY_CLIENT_ID, mClientId);
-        }
-
-        if(mPublishExt != null) {
-            json.put(KEY_EXT, mPublishExt);
-        }
-
-        if(mPublishId != null) {
-            json.put(KEY_ID, mPublishId);
-        }
-        return json.toString();
     }
 
 }

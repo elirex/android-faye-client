@@ -190,9 +190,6 @@ public class FayeService extends Service {
     private void startFayeClient() {
         fayeClient = new FayeClient(SERVER_HOST + ":" + SERVER_PORT
                 + SERVER_PATH, AUTH_TOKEN, ACCESS_TOKEN);
-        // for(String channel : channels) {
-        //     fayeClient.addChannel(channel);
-        // }
         fayeClient.setListener(fayeClientListener);
         fayeClient.connectToServer();
     }

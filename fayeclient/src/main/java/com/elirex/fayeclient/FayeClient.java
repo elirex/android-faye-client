@@ -51,6 +51,7 @@ public class FayeClient {
     public FayeClient(String url, MetaMessage meta) {
         serverUrl = url;
         mMetaMessage = meta;
+        channels = new HashSet<String>();
     }
 
     public FayeClient(String url, String authToken, String accessToken) {
@@ -130,7 +131,6 @@ public class FayeClient {
 
     public void disconnectFromServer() {
         for(String channel : channels) {
-            Log.d(LOG_TAG, "UnSubscribe:" + channel);
             unsubscribe(channel);
         }
         channels.clear();
@@ -144,6 +144,7 @@ public class FayeClient {
 
     public void subscribeToChannels(String... channels) {
         for(String channel : channels) {
+            this.channels.add(channel);
             subscribe(channel);
         }
     }
@@ -167,31 +168,16 @@ public class FayeClient {
         }
     }
 
-    public void publish(String channel, String content) {
-        long number = (new Date()).getTime();
-        String messageId = String.format("msg_%d_%d",
-                new Object[]{Long.valueOf(number), Integer.valueOf(1)});
-        JSONObject extension = new JSONObject();
+    public void publish(String channel, String data) {
+        publish(channel, data, null, null);
+    }
 
+    public void publish(String channel, String data, String ext, String id) {
         try {
-            extension.put("accessToken", accessToken);
-            // extension.put("authToken", "yrgXDRY8U9cvQCVksCqALXRbywnMViRTS210ISQf");
-            extension.put("authToken", authToken);
-        } catch (JSONException var9) {
-            var9.printStackTrace();
-            return;
-        }
-
-        try {
-            JSONObject ex = new JSONObject();
-            ex.put("channel", channel);
-            ex.put("clientId", clientId);
-            ex.put("data", content);
-            ex.put("id", messageId);
-            ex.put("ext", extension);
-            this.webSocket.send(ex.toString());
-        } catch (JSONException var8) {
-            Log.e("PushClient", "Handshake Failed", var8);
+            String publish = mMetaMessage.publish(channel, data, ext, id);
+            webSocket.send(publish);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Build publish message to JSON error", e);
         }
     }
 
@@ -235,14 +221,8 @@ public class FayeClient {
     }
 
     private void handShake() {
-        String shandshake = String
-                  .format("{\"supportedConnectionTypes\":[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"],\"minim// umVersion\":\"1.0beta\",\"versi// on\":\"1.0\",\"channel\":\"/meta/handshake\", \"ext\":{\"accessToken\":\"%s\"}}",
-                          accessToken);
-        Log.d(LOG_TAG, "sHandShake:" + shandshake);
-         // webSocket.send(handshake);
         try {
             String handshake = mMetaMessage.handShake();
-            Log.d(LOG_TAG, "HandShake:" + handshake);
             webSocket.send(handshake);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "HandShake message error", e);
@@ -250,10 +230,6 @@ public class FayeClient {
     }
 
     private void subscribe(String channel) {
-        // String subscribe = String
-        //         .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/subscribe\", \"ext\":{\"accessToken\":\"%s\"}}",
-        //                 clientId, channel, accessToken);
-        // webSocket.send(subscribe);
         try {
             String subscribe = mMetaMessage.subscribe(channel);
             webSocket.send(subscribe);
@@ -263,23 +239,16 @@ public class FayeClient {
     }
 
     private void unsubscribe(String channel) {
-        // String unsubscribe = String
-        //        .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"chann// el\":\"/meta/unsubscribe\",\"ext\":{\"accessToken\":\"%s\"}}",
-        //                 clientId, channel, accessToken);
-        // webSocket.send(unsubscribe);
         try {
-            String unsubscribe = mMetaMessage.subscribe(channel);
+            String unsubscribe = mMetaMessage.unsubscribe("/" + channel);
             webSocket.send(unsubscribe);
+            Log.i(LOG_TAG, "UnSubscribe:" + channel);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Unsubscribe message error", e);
         }
     }
 
     private void connect() {
-        // String connect = String
-        //         .format("{\"clientId\":\"%s\",\"connectionType\":\"long-polling\",\"chann// el\":\"/meta/connect\",\"ext\":{\"accessToken\":\"%s\"}}",
-        //                 clientId, accessToken);
-        // webSocket.send(connect);
         try {
             String connect = mMetaMessage.connect();
             webSocket.send(connect);
@@ -289,10 +258,6 @@ public class FayeClient {
     }
 
     private void disconnect() {
-        // String disconnect = String
-        //         .format("{\"clientId\":\"%s\",\"connectionType\":\"long-polling\",\"chann// el\":\"/meta/disconnect\",\"ext\":{\"accessToken\":\"%s\"}}",
-        //                 clientId, accessToken);
-        // webSocket.send(disconnect);
         try {
             String disconnect = mMetaMessage.disconnect();
             webSocket.send(disconnect);
@@ -302,10 +267,9 @@ public class FayeClient {
     }
 
     private void parseFayeMessage(String message) {
-        Log.d(LOG_TAG, "onMessage:" + message);
+        Log.d(LOG_TAG, "Parse Faye Message:" + message);
         JSONArray arr = null;
         JSONObject obj = null;
-
         try {
             arr = new JSONArray(message);
         } catch (JSONException e) {
@@ -318,9 +282,9 @@ public class FayeClient {
 
             if(obj.optString("channel").equals(HANDSHAKE_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
-                    // clientId = obj.optString("clientId");
                     mMetaMessage.setClient(obj.optString("clientId"));
                     if(listener != null && listener instanceof FayeClientListener) {
+                        Log.d(LOG_TAG, "callback");
                         listener.onConnectedToServer(this);
                     }
                     connect();
