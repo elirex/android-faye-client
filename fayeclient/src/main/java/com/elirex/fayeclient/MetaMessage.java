@@ -13,6 +13,7 @@ public class MetaMessage {
     private static final String KEY_VERSION = "version";
     private static final String KEY_MIN_VERSION = "minimumVersion";
     private static final String KEY_SUPPORT_CONNECTION_TYPES = "supportedConnectionTypes";
+
     private static final String KEY_CLIENT_ID = "clientId";
     private static final String KEY_SUBSCRIPTION = "subscriptoin";
     private static final String KEY_CONNECTION_TYPE = "connectionType";
@@ -29,7 +30,7 @@ public class MetaMessage {
     private String mVersion = "1.0";
     private String mMinimumVersion = "1.0beta";
     private String mClientId;
-    private String mSupportConnectionTypes = "[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"]";
+    private String mSupportConnectionTypes;
     private String mConnectionType = "long-polling";
 
     private String mHandShakeExt;
@@ -60,8 +61,15 @@ public class MetaMessage {
     public String handShake() throws JSONException {
         JSONObject json = new JSONObject();
         json.put(KEY_CHANNEL, HANDSHAKE_CHANNEL)
-                .put(KEY_VERSION, mMinimumVersion)
+                .put(KEY_MIN_VERSION, mMinimumVersion)
                 .put(KEY_VERSION, mVersion);
+        JSONArray arr = new JSONArray();
+        arr.put("long-polling");
+        arr.put("callback-polling");
+        arr.put("iframe");
+        arr.put("websocket");
+
+        json.put(KEY_SUPPORT_CONNECTION_TYPES, arr);
         if(mHandShakeExt != null) {
             json.put(KEY_EXT, mHandShakeExt);
         }
@@ -120,7 +128,7 @@ public class MetaMessage {
         mDisconnectId = id;
     }
 
-    public String disconnectExt(String ext) throws JSONException {
+    public String disconnect() throws JSONException {
         JSONObject json = new JSONObject();
         json.put(KEY_CHANNEL, DISCONNECT_CHANNEL)
                 .put(KEY_CLIENT_ID, mClientId);
@@ -183,6 +191,22 @@ public class MetaMessage {
             json.put(KEY_EXT, mUnsubscribeId);
         }
         return json.toString();
+    }
+
+    public void setAllExt(String ext) {
+         mHandShakeExt = ext;
+         mConnectExt = ext;
+         mDisconnectExt = ext;
+         mSubscribeExt = ext;
+         mUnsubscribeExt = ext;
+    }
+
+    public void  setAllId(String id) {
+        mHandShakeId = id;
+        mConnectId = id;
+        mDisconnectId = id;
+        mSubscribeId = id;
+        mUnsubscribeId = id;
     }
 
     // Publish

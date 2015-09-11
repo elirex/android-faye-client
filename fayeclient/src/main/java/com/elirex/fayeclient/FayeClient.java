@@ -45,13 +45,13 @@ public class FayeClient {
     private String clientId = "";
     private boolean fayeConnected = false;
     private boolean webSocketConnected = false;
-
+    private MetaMessage mMetaMessage;
     private Handler messageHandler;
 
-    // public FayeClient(String url, MetaMessage meta) {
-    //     serverUrl = url;
-    //     mMetaMessage = meta;
-    // }
+    public FayeClient(String url, MetaMessage meta) {
+        serverUrl = url;
+        mMetaMessage = meta;
+    }
 
     public FayeClient(String url, String authToken, String accessToken) {
         this(url, authToken, accessToken, "");
@@ -235,56 +235,70 @@ public class FayeClient {
     }
 
     private void handShake() {
-         String handshake = String
-                 .format("{\"supportedConnectionTypes\":[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"],\"minim// umVersion\":\"1.0beta\",\"version\":\"1.0\",\"channel\":\"/meta/handshake\", \"ext\":{\"accessToken\":\"%s\"}}",
-                         accessToken);
-        webSocket.send(handshake);
-        // try {
-        //     String handshake = mMetaMessage.handShake();
-        //     webSocket.send(handshake);
-        // } catch (JSONException e) {
-        //     Log.e(LOG_TAG, "HandShake message error", e);
-        // }
+        String shandshake = String
+                  .format("{\"supportedConnectionTypes\":[\"long-polling\",\"callback-polling\",\"iframe\",\"websocket\"],\"minim// umVersion\":\"1.0beta\",\"versi// on\":\"1.0\",\"channel\":\"/meta/handshake\", \"ext\":{\"accessToken\":\"%s\"}}",
+                          accessToken);
+        Log.d(LOG_TAG, "sHandShake:" + shandshake);
+         // webSocket.send(handshake);
+        try {
+            String handshake = mMetaMessage.handShake();
+            Log.d(LOG_TAG, "HandShake:" + handshake);
+            webSocket.send(handshake);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "HandShake message error", e);
+        }
     }
 
     private void subscribe(String channel) {
-        String subscribe = String
-                .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/subscribe\", \"ext\":{\"accessToken\":\"%s\"}}",
-                        clientId, channel, accessToken);
-        webSocket.send(subscribe);
-        // try {
-        //     String subscribe = mMetaMessage.subscribe(channel);
-        //     webSocket.send(subscribe);
-        // } catch (JSONException e) {
-        //     Log.e(LOG_TAG, "Subscribe message error", e);
-        // }
+        // String subscribe = String
+        //         .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/subscribe\", \"ext\":{\"accessToken\":\"%s\"}}",
+        //                 clientId, channel, accessToken);
+        // webSocket.send(subscribe);
+        try {
+            String subscribe = mMetaMessage.subscribe(channel);
+            webSocket.send(subscribe);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Subscribe message error", e);
+        }
     }
 
     private void unsubscribe(String channel) {
-        String unsubscribe = String
-               .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"channel\":\"/meta/unsubscribe\",\"ext\":{\"accessToken\":\"%s\"}}",
-                        clientId, channel, accessToken);
-        webSocket.send(unsubscribe);
-        // try {
-        //     String unsubscribe = mMetaMessage.subscribe(channel);
-        //     webSocket.send(unsubscribe);
-        // } catch (JSONException e) {
-        //     Log.e(LOG_TAG, "Unsubscribe message error", e);
-        // }
+        // String unsubscribe = String
+        //        .format("{\"clientId\":\"%s\",\"subscription\":\"%s\",\"chann// el\":\"/meta/unsubscribe\",\"ext\":{\"accessToken\":\"%s\"}}",
+        //                 clientId, channel, accessToken);
+        // webSocket.send(unsubscribe);
+        try {
+            String unsubscribe = mMetaMessage.subscribe(channel);
+            webSocket.send(unsubscribe);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Unsubscribe message error", e);
+        }
     }
 
     private void connect() {
-        String connect = String
-                .format("{\"clientId\":\"%s\",\"connectionType\":\"long-polling\",\"channel\":\"/meta/connect\",\"ext\":{\"accessToken\":\"%s\"}}",
-                        clientId, accessToken);
-        webSocket.send(connect);
+        // String connect = String
+        //         .format("{\"clientId\":\"%s\",\"connectionType\":\"long-polling\",\"chann// el\":\"/meta/connect\",\"ext\":{\"accessToken\":\"%s\"}}",
+        //                 clientId, accessToken);
+        // webSocket.send(connect);
+        try {
+            String connect = mMetaMessage.connect();
+            webSocket.send(connect);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Connect message error", e);
+        }
     }
 
     private void disconnect() {
-        String disconnect = String
-                .format("{\"clientId\":\"%s\",\"connectionType\":\"long-polling\",\"channel\":\"/meta/disconnect\",\"ext\":{\"accessToken\":\"%s\"}}",
-                        clientId, accessToken);
-        webSocket.send(disconnect);
+        // String disconnect = String
+        //         .format("{\"clientId\":\"%s\",\"connectionType\":\"long-polling\",\"chann// el\":\"/meta/disconnect\",\"ext\":{\"accessToken\":\"%s\"}}",
+        //                 clientId, accessToken);
+        // webSocket.send(disconnect);
+        try {
+            String disconnect = mMetaMessage.disconnect();
+            webSocket.send(disconnect);
+        } catch (JSONException e) {
+            Log.e(LOG_TAG, "Disconnect message error", e);
+        }
     }
 
     private void parseFayeMessage(String message) {
@@ -304,7 +318,8 @@ public class FayeClient {
 
             if(obj.optString("channel").equals(HANDSHAKE_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
-                    clientId = obj.optString("clientId");
+                    // clientId = obj.optString("clientId");
+                    mMetaMessage.setClient(obj.optString("clientId"));
                     if(listener != null && listener instanceof FayeClientListener) {
                         listener.onConnectedToServer(this);
                     }
