@@ -40,9 +40,6 @@ public class FayeClient {
     private FayeClientListener listener = null;
     private HashSet<String> channels;
     private String serverUrl = "";
-    private String authToken = "";
-    private String accessToken = "";
-    private String clientId = "";
     private boolean fayeConnected = false;
     private boolean webSocketConnected = false;
     private MetaMessage mMetaMessage;
@@ -52,21 +49,6 @@ public class FayeClient {
         serverUrl = url;
         mMetaMessage = meta;
         channels = new HashSet<String>();
-    }
-
-    public FayeClient(String url, String authToken, String accessToken) {
-        this(url, authToken, accessToken, "");
-    }
-
-    public FayeClient(String url, String authToken, String accessToken,
-                      String channel) {
-        serverUrl = url;
-        this.authToken = authToken;
-        this.accessToken = accessToken;
-        channels = new HashSet<String>();
-        if(!channels.contains(channel)) {
-            channels.add(channel);
-        }
     }
 
     {

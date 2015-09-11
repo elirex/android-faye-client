@@ -23,17 +23,14 @@ public class FayeService extends Service {
 
     private static final String LOG_TAG = FayeService.class.getSimpleName();
 
-    private static String SERVER_HOST;
-    private static String SERVER_PORT;
-    private static String SERVER_PATH;
-    private static String ACCESS_TOKEN;
-    private static String AUTH_TOKEN;
-    private static HashSet<String> channels;
+    private static String sServerUrl;
+    private static MetaMessage sMetaMessage;
+    private static HashSet<String> sChannels;
 
-    FayeServiceBinder binder = new FayeServiceBinder();
+    private FayeServiceBinder mBinder = new FayeServiceBinder();
 
-    private FayeClient fayeClient;
-    private ArrayList<FayeServiceListener> listeners = new ArrayList<FayeServiceListener>();
+    private FayeClient mFayeClient;
+    private ArrayList<FayeServiceListener> mListeners = new ArrayList<FayeServiceListener>();
 
     @Override
     public void onCreate() {
@@ -49,50 +46,19 @@ public class FayeService extends Service {
         Log.i(LOG_TAG, "Faye Service Stopped: " + this);
     }
 
-    public static void initFayeService(String host, int port, String path,
-                                String accessToken, String authToken, String... channel) {
-        initFayeService(host, port, path);
-        ACCESS_TOKEN = accessToken;
-        AUTH_TOKEN = authToken;
-        if(channels == null) {
-            channels = new HashSet<String>();
-        }
-        for(String ch : channel) {
-            if(!channels.contains(ch)) {
-                channels.add(ch);
-            }
-        }
+    public static void initFayeService(String url, MetaMessage meta) {
+        initFayeService(url, meta, "");
     }
 
-    public static void initFayeService(String host, int port, String path) {
-        SERVER_HOST = host;
-        SERVER_PORT = String.valueOf(port);
-        SERVER_PATH = path;
-    }
-
-    public static void addChannel(String channel) {
-        if(channels == null) {
-            channels = new HashSet<String>();
+    public static void initFayeService(String url, MetaMessage meta,
+                                       String... channels) {
+        sServerUrl = url;
+        sMetaMessage = meta;
+        if(sChannels == null)  {
+            sChannels = new HashSet<String>();
         }
-        channels.add(channel);
-    }
-
-    public static void addAllChannel(String... channel) {
-        if(channels == null) {
-            channels = new HashSet<String>();
-        }
-        channels.addAll(Arrays.asList(channel));
-    }
-
-    public static void removeChannel(String channel) {
-        if(channels != null && channels.contains(channel)) {
-            channels.remove(channel);
-        }
-    }
-
-    public static void removeAllChannel() {
-        if(channels != null) {
-            channels.clear();
+        for(String channel : channels) {
+            sChannels.add(channel);
         }
     }
 
@@ -108,30 +74,29 @@ public class FayeService extends Service {
             }
         }
 
-        ServiceConnection connection = new ServiceConnection() {
+        // ServiceConnection connection = new ServiceConnection() {
 
-            private FayeService service;
+        //     private FayeService service;
 
-            @Override
-            public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-                FayeServiceBinder binder = ((FayeServiceBinder) iBinder);
-                service = binder.getService();
-                service.addListener(listener);
-                Log.i(LOG_TAG, "Faye Service connected.");
-            }
+        //     @Override
+        //     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+        //         FayeServiceBinder binder = ((FayeServiceBinder) iBinder);
+        //         service = binder.getService();
+        //         service.addListener(listener);
+        //         Log.i(LOG_TAG, "Faye Service connected.");
+        //     }
 
-            @Override
-            public void onServiceDisconnected(ComponentName componentName) {
-                if(service != null)  {
-                    service.removeListener(listener);
-                    service = null;
-                    Log.i(LOG_TAG, "Faye service disconnected.");
-                }
-            }
-        };
+        //     @Override
+        //     public void onServiceDisconnected(ComponentName componentName) {
+        //         if(service != null)  {
+        //             service.removeListener(listener);
+        //             service = null;
+        //             Log.i(LOG_TAG, "Faye service disconnected.");
+        //         }
+        //     }
+        // };
 
-        // FayeServiceConnection connection = new FayeServiceConnection(listener);
-
+        FayeServiceConnection connection = new FayeServiceConnection(listener);
         context.bindService(new Intent(context, FayeService.class),
                 connection, Context.BIND_AUTO_CREATE);
         return connection;
@@ -142,12 +107,15 @@ public class FayeService extends Service {
         context.unbindService(connection);
     }
 
-    private FayeClientListener fayeClientListener = new FayeClientListener() {
+    private FayeClientListener mFayeClientListener = new FayeClientListener() {
         @Override
         public void onConnectedToServer(FayeClient fc) {
             Log.i(LOG_TAG, "Connect to server");
-            Log.d(LOG_TAG, "FayeService channels.size() = " + channels.size());
-            for(String channel : channels) {
+            for(FayeServiceListener listener : mListeners) {
+                listener.onConnectedToServer(fc);
+            }
+            Log.d(LOG_TAG, "FayeService channels.size() = " + sChannels.size());
+            for(String channel : sChannels) {
                 Log.d(LOG_TAG, "Channel: " + channel);
                 fc.subscribeToChannel(channel);
             }
@@ -162,7 +130,7 @@ public class FayeService extends Service {
         @Override
         public void onMessageReceived(FayeClient fc, String msg) {
             Log.i(LOG_TAG, "Message from server: " + msg);
-            for(FayeServiceListener listener : listeners) {
+            for(FayeServiceListener listener : mListeners) {
                 listener.onMessageReceived(fc, msg);
             }
         }
@@ -170,28 +138,27 @@ public class FayeService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        if(binder == null) {
-            binder = new FayeServiceBinder();
+        if(mBinder == null) {
+            mBinder = new FayeServiceBinder();
         }
-        return binder;
+        return mBinder;
     }
 
     protected void addListener(FayeServiceListener listener) {
-        listeners.add(listener);
+        mListeners.add(listener);
     }
 
     protected void removeListener(FayeServiceListener listener) {
-        listeners.remove(listener);
-        if(listeners.size() == 0) {
+        mListeners.remove(listener);
+        if(mListeners.size() == 0) {
             stopSelf();
         }
     }
 
     private void startFayeClient() {
-        fayeClient = new FayeClient(SERVER_HOST + ":" + SERVER_PORT
-                + SERVER_PATH, AUTH_TOKEN, ACCESS_TOKEN);
-        fayeClient.setListener(fayeClientListener);
-        fayeClient.connectToServer();
+        mFayeClient = new FayeClient(sServerUrl, sMetaMessage);
+        mFayeClient.setListener(mFayeClientListener);
+        mFayeClient.connectToServer();
     }
 
     private void stopFayeClient() {
@@ -201,11 +168,10 @@ public class FayeService extends Service {
 
             @Override
             public void run() {
-                if (fayeClient.isWebsocketConnected()) {
-                    fayeClient.disconnectFromServer();
-                    channels.clear();
+                if (mFayeClient.isWebsocketConnected()) {
+                    mFayeClient.disconnectFromServer();
+                    sChannels.clear();
                 }
-
             }
         });
     }
@@ -216,7 +182,7 @@ public class FayeService extends Service {
         }
 
         public FayeClient getClient() {
-            return fayeClient;
+            return mFayeClient;
         }
     }
 

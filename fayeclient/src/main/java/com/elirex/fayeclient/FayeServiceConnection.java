@@ -8,13 +8,12 @@ import android.util.Log;
 /**
  * @author Sheng-Yuan Wang (2015/9/4).
  */
-public class FayeServiceConnection implements ServiceConnection{
+public class FayeServiceConnection implements ServiceConnection {
 
     private static final String LOG_TAG =
             FayeServiceConnection.class.getSimpleName();
 
     private FayeService service;
-    private FayeClient client;
     private FayeServiceListener listener;
 
     public FayeServiceConnection(FayeServiceListener listener) {
@@ -25,7 +24,6 @@ public class FayeServiceConnection implements ServiceConnection{
     public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
         FayeService.FayeServiceBinder binder = ((FayeService.FayeServiceBinder) iBinder);
         service = binder.getService();
-        client = binder.getClient();
         service.addListener(listener);
         Log.i(LOG_TAG, "Faye Service connected.");
     }
@@ -37,10 +35,6 @@ public class FayeServiceConnection implements ServiceConnection{
            service = null;
            Log.i(LOG_TAG, "Faye service disconnected.");
        }
-    }
-
-    public FayeClient getClient() {
-        return client;
     }
 
 }

@@ -5,4 +5,5 @@ package com.elirex.fayeclient;
  */
 public interface FayeServiceListener {
     public void onMessageReceived(FayeClient fc, String msg);
+    public void onConnectedToServer(FayeClient fc);
 }
