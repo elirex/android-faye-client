@@ -41,14 +41,15 @@ public class WebSocket extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        Log.e(LOG_TAG, "Code:" + code + ", Reason:" + reason + ", Remote:" + remote);
+        Log.i(LOG_TAG, "code: " + code + ", reason: "
+                + reason + ", remote: " + remote);
         messageHandler.sendMessage(
                 Message.obtain(messageHandler, MESSAGE_ONCLOSE));
     }
 
     @Override
     public void onError(Exception e) {
-        Log.e(LOG_TAG, "onError", e);
+        Log.e(LOG_TAG, "On WebSocket Error:", e);
     }
 
 }

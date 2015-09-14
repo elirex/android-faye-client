@@ -36,8 +36,8 @@ public class FayeClient {
     private final int MESSAGE_ONCLOSE = 2;
     private final int MESSAGE_ONMESSAGE = 3;
 
-    private WebSocket webSocket = null;
-    private FayeClientListener listener = null;
+    private WebSocket mWebSocket = null;
+    private FayeClientListener mListener = null;
     private HashSet<String> channels;
     private String serverUrl = "";
     private boolean fayeConnected = false;
@@ -69,8 +69,8 @@ public class FayeClient {
                         Log.i(LOG_TAG, "onClosed() executed");
                         webSocketConnected = false;
                         fayeConnected = false;
-                        if(listener != null && listener instanceof FayeClientListener) {
-                            listener.onDisconnectedFromServer(FayeClient.this);
+                        if(mListener != null && mListener instanceof FayeClientListener) {
+                            mListener.onDisconnectedFromServer(FayeClient.this);
                         }
                         break;
                     case MESSAGE_ONMESSAGE:
@@ -88,11 +88,11 @@ public class FayeClient {
 
     /* Public Methods */
     public FayeClientListener getListener() {
-        return listener;
+        return mListener;
     }
 
     public void setListener(FayeClientListener listener) {
-        this.listener = listener;
+        mListener = listener;
     }
 
     public void addChannel(String channel) {
@@ -157,7 +157,7 @@ public class FayeClient {
     public void publish(String channel, String data, String ext, String id) {
         try {
             String publish = mMetaMessage.publish(channel, data, ext, id);
-            webSocket.send(publish);
+            mWebSocket.send(publish);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Build publish message to JSON error", e);
         }
@@ -179,33 +179,33 @@ public class FayeClient {
 
     private void openWebSocketConnection() {
         // Clean up any existing socket
-        if(webSocket != null) {
-            webSocket.close();
+        if(mWebSocket != null) {
+            mWebSocket.close();
         }
         try {
             URI uri = new URI(serverUrl);
-            webSocket = new WebSocket(uri, messageHandler);
+            mWebSocket = new WebSocket(uri, messageHandler);
             Log.d(LOG_TAG, "Scheme:" + uri.getScheme());
             if(uri.getScheme().equals("wss")) {
-                webSocket.setSocket(getSSLWebSocket());
+                mWebSocket.setSocket(getSSLWebSocket());
             }
-            webSocket.connect();
+            mWebSocket.connect();
         } catch (URISyntaxException e) {
             Log.e(LOG_TAG, "Server URL error", e);
         }
     }
 
     private void closeWebSocketConnection() {
-        if(webSocket != null) {
-            webSocket.close();
+        if(mWebSocket != null) {
+            mWebSocket.close();
         }
-        listener = null;
+        mListener = null;
     }
 
     private void handShake() {
         try {
             String handshake = mMetaMessage.handShake();
-            webSocket.send(handshake);
+            mWebSocket.send(handshake);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "HandShake message error", e);
         }
@@ -214,7 +214,7 @@ public class FayeClient {
     private void subscribe(String channel) {
         try {
             String subscribe = mMetaMessage.subscribe(channel);
-            webSocket.send(subscribe);
+            mWebSocket.send(subscribe);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Subscribe message error", e);
         }
@@ -223,7 +223,7 @@ public class FayeClient {
     private void unsubscribe(String channel) {
         try {
             String unsubscribe = mMetaMessage.unsubscribe("/" + channel);
-            webSocket.send(unsubscribe);
+            mWebSocket.send(unsubscribe);
             Log.i(LOG_TAG, "UnSubscribe:" + channel);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Unsubscribe message error", e);
@@ -233,7 +233,7 @@ public class FayeClient {
     private void connect() {
         try {
             String connect = mMetaMessage.connect();
-            webSocket.send(connect);
+            mWebSocket.send(connect);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Connect message error", e);
         }
@@ -242,14 +242,13 @@ public class FayeClient {
     private void disconnect() {
         try {
             String disconnect = mMetaMessage.disconnect();
-            webSocket.send(disconnect);
+            mWebSocket.send(disconnect);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Disconnect message error", e);
         }
     }
 
     private void parseFayeMessage(String message) {
-        Log.d(LOG_TAG, "Parse Faye Message:" + message);
         JSONArray arr = null;
         JSONObject obj = null;
         try {
@@ -265,56 +264,54 @@ public class FayeClient {
             if(obj.optString("channel").equals(HANDSHAKE_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
                     mMetaMessage.setClient(obj.optString("clientId"));
-                    if(listener != null && listener instanceof FayeClientListener) {
-                        Log.d(LOG_TAG, "callback");
-                        listener.onConnectedToServer(this);
+                    if(mListener != null && mListener instanceof FayeClientListener) {
+                        mListener.onConnectedToServer(this);
                     }
                     connect();
                 } else {
-                    Log.e(LOG_TAG, "onMessage(): Error with bayeux handshake");
+                    Log.e(LOG_TAG, "Handshake Error: " + obj.toString());
                 }
             } else if(obj.optString("channel").equals(CONNECT_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
                     fayeConnected = true;
                     connect();
                 } else {
-                    Log.e(LOG_TAG, "onMessage(): Error connecting to faye");
+                    Log.e(LOG_TAG, "Connecting Error: " + obj.toString());
                 }
             } else if(obj.optString("channel").equals(DISCONNECT_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
                     fayeConnected = false;
                     closeWebSocketConnection();
-                    if(listener != null && listener instanceof FayeClientListener) {
-                        listener.onDisconnectedFromServer(this);
+                    if(mListener != null && mListener instanceof FayeClientListener) {
+                        mListener.onDisconnectedFromServer(this);
                     }
                 } else {
-                    Log.e(LOG_TAG, "onMessage(): Error disconnecting from faye");
+                    Log.e(LOG_TAG, "Disconnecting Error: " + obj.toString());
                 }
             } else if(obj.optString("channel").equals(SUBSCRIBE_CHANNEL)) {
                 if(obj.optBoolean("successful")) {
                     fayeConnected = true;
-                    Log.i(LOG_TAG, String.format(
-                            "Subscribed to channel %s on fay",
-                            obj.optString("subscription")));
+                    Log.i(LOG_TAG, "Subscribed channel "
+                            + obj.optString("subscription"));
                 } else {
-                    Log.e(LOG_TAG, String.format(
-                            "Error subscribing to channel %s on faye with error %s",
-                            obj.optString("subscription"),
-                            obj.optString("error")));
+                    Log.e(LOG_TAG, "Subscribing channel " +
+                            obj.optString("subscription") + " Error: "
+                            + obj.toString());
                 }
             } else if(obj.optString("channel").equals(UNSUBSCRIBE_CHANNEL)) {
-                Log.e(LOG_TAG, String.format("Unsubscribed from channel %s on faye",
-                        obj.optString("subscription")));
+                Log.e(LOG_TAG, "Unsubscribing channel "
+                        + obj.optString("subscription") + " Error: "
+                        + obj.toString());
             } else {
                 if(channels.contains(obj.optString("channel"))) {
                     if(obj.optString("data") != null) {
-                        if(listener != null && listener instanceof FayeClientListener) {
-                            listener.onMessageReceived(this, obj.optString("data"));
+                        if(mListener != null && mListener instanceof FayeClientListener) {
+                            mListener.onMessageReceived(this, obj.optString("data"));
                         }
                     }
                 } else {
-                    Log.e(LOG_TAG, String.format("No match for channel %s",
-                            obj.optString("channel")));
+                    Log.e(LOG_TAG, "No match for channel "
+                            + obj.optString("channel"));
                 }
             }
         }
