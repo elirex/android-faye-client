@@ -16,10 +16,10 @@ public class WebSocket extends WebSocketClient {
 
     private static final String LOG_TAG = WebSocket.class.getSimpleName();
 
-    public static final int MESSAGE_ONOPEN = 1;
-    public static final int MESSAGE_ONCLOSE = 2;
-    public static final int MESSAGE_ONMESSAGE = 3;
-    public static final int MESSAGE_ONERROR = 4;
+    public static final int ON_OPEN = 1;
+    public static final int ON_CLOSE = 2;
+    public static final int ON_MESSAGE = 3;
+    public static final int ON_ERROR = 4;
 
     private Handler messageHandler;
 
@@ -30,13 +30,12 @@ public class WebSocket extends WebSocketClient {
 
     @Override
     public void onOpen(ServerHandshake serverHandshake) {
-        messageHandler.sendMessage(Message.obtain(messageHandler, MESSAGE_ONOPEN));
+        messageHandler.sendMessage(Message.obtain(messageHandler, ON_OPEN));
     }
 
     @Override
     public void onMessage(String s) {
-        messageHandler.sendMessage(Message.obtain(messageHandler,
-                MESSAGE_ONMESSAGE, s));
+        messageHandler.sendMessage(Message.obtain(messageHandler, ON_MESSAGE, s));
     }
 
     @Override
@@ -44,7 +43,7 @@ public class WebSocket extends WebSocketClient {
         Log.i(LOG_TAG, "code: " + code + ", reason: "
                 + reason + ", remote: " + remote);
         messageHandler.sendMessage(
-                Message.obtain(messageHandler, MESSAGE_ONCLOSE));
+                Message.obtain(messageHandler, ON_CLOSE));
     }
 
     @Override

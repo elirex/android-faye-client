@@ -5,8 +5,8 @@ package com.elirex.fayeclient;
  */
 public interface FayeClientListener {
 
-    public void onConnectedToServer(FayeClient fc);
-    public void onDisconnectedFromServer(FayeClient fc);
-    public void onMessageReceived(FayeClient fc, String msg);
+    public void onConnectedServer(FayeClient fc);
+    public void onDisconnectedServer(FayeClient fc);
+    public void onReceivedMessage(FayeClient fc, String msg);
 
 }

@@ -9,23 +9,23 @@ import org.json.JSONObject;
  */
 public class MetaMessage {
 
-    private static final String KEY_CHANNEL = "channel";
-    private static final String KEY_VERSION = "version";
-    private static final String KEY_MIN_VERSION = "minimumVersion";
-    private static final String KEY_SUPPORT_CONNECTION_TYPES = "supportedConnectionTypes";
+    public static final String KEY_CHANNEL = "channel";
+    public static final String KEY_VERSION = "version";
+    public static final String KEY_MIN_VERSION = "minimumVersion";
+    public static final String KEY_SUPPORT_CONNECTION_TYPES = "supportedConnectionTypes";
 
-    private static final String KEY_CLIENT_ID = "clientId";
-    private static final String KEY_SUBSCRIPTION = "subscription";
-    private static final String KEY_CONNECTION_TYPE = "connectionType";
-    private static final String KEY_DATA = "data";
-    private static final String KEY_EXT = "ext";
-    private static final String KEY_ID = "id";
+    public static final String KEY_CLIENT_ID = "clientId";
+    public static final String KEY_SUBSCRIPTION = "subscription";
+    public static final String KEY_CONNECTION_TYPE = "connectionType";
+    public static final String KEY_DATA = "data";
+    public static final String KEY_EXT = "ext";
+    public static final String KEY_ID = "id";
 
-    private static final String HANDSHAKE_CHANNEL = "/meta/handshake";
-    private static final String CONNECT_CHANNEL = "/meta/connect";
-    private static final String DISCONNECT_CHANNEL = "/meta/disconnect";
-    private static final String SUBSCRIBE_CHANNEL = "/meta/subscribe";
-    private static final String UNSUBSCRIBE_CHANNEL = "/meta/unsubscribe";
+    public static final String HANDSHAKE_CHANNEL = "/meta/handshake";
+    public static final String CONNECT_CHANNEL = "/meta/connect";
+    public static final String DISCONNECT_CHANNEL = "/meta/disconnect";
+    public static final String SUBSCRIBE_CHANNEL = "/meta/subscribe";
+    public static final String UNSUBSCRIBE_CHANNEL = "/meta/unsubscribe";
 
     private String mVersion = "1.0";
     private String mMinimumVersion = "1.0beta";
