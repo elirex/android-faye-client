@@ -12,7 +12,7 @@
 // Initial Meta Message
 MetaMessage meta = new MetaMessate();
 // Initinal FayeClient
-FayeClient mClient = new FayeClient("wws://fayesample.com/fayeservice, meta);
+FayeClient mClient = new FayeClient("wws://fayesample.com/fayeservice", meta);
 
 // Set FayeClient listener
 mClient.setListener(new FayeClientListener() {
@@ -65,7 +65,9 @@ if(mClient.isConnectedServer()) {
 	mClient.publish("/channel-1", "The sample message");
 
 	// Include ext and id
-	mClient.publich("/channel-2", "The message include ext and id", "{/"auth/": /"password/"}", "{/"user/":/"Tester/"}");
+	mClient.publich("/channel-2", "The message include ext and id", 
+					"{/"auth/": /"password/"}", 
+					"{/"user/":/"Tester/"}");
 }
 ```
 
@@ -109,7 +111,7 @@ String id = "{/"user/":/"Tester/"}";
 message.setHandshakeExt(ext);
 message.setHandshakeId(id);
 // Set handshake's supportConnectionTypes field
-// The supportConnectionTypes default include "long-polling", "callback-polling", "websocket" and "iframe".
+// Default supportConnectionTypes field includes "long-polling", "callback-polling", "websocket" and "iframe".
 String types[] = {"long-polling", callback-polling};
 message.setSupportConnectionTypes(types);
 
