@@ -31,7 +31,7 @@ public class FayeClient {
     private HashSet<String> mChannels;
     private String mServerUrl = "";
     private boolean mFayeConnected = false;
-    private boolean mWebSocketConnected = false;
+    private boolean mIsConnectedServer = false;
     private MetaMessage mMetaMessage;
     private Handler mMessageHandler;
 
@@ -51,12 +51,12 @@ public class FayeClient {
                 switch(msg.what) {
                     case WebSocket.ON_OPEN:
                         Log.i(LOG_TAG, "onOpen() executed");
-                        mWebSocketConnected = true;
+                        mIsConnectedServer = true;
                         handShake();
                         break;
                     case WebSocket.ON_CLOSE:
                         Log.i(LOG_TAG, "onClosed() executed");
-                        mWebSocketConnected = false;
+                        mIsConnectedServer = false;
                         mFayeConnected = false;
                         if(mListener != null && mListener instanceof FayeClientListener) {
                             mListener.onDisconnectedServer(FayeClient.this);
@@ -88,8 +88,8 @@ public class FayeClient {
         mChannels.add(channel);
     }
 
-    public boolean isWebsocketConnected() {
-        return mWebSocketConnected;
+    public boolean isConnectedServer() {
+        return mIsConnectedServer;
     }
 
     public boolean isFayeConnected() {
@@ -133,7 +133,7 @@ public class FayeClient {
         }
     }
 
-    public void unsubscribeChannels() {
+    public void unsubscribeAll() {
         for(String channel : mChannels) {
             unsubscribe(channel);
         }

@@ -165,7 +165,7 @@ public class FayeService extends Service {
         new Handler(thread.getLooper()).post(new Runnable() {
             @Override
             public void run() {
-                if (mFayeClient.isWebsocketConnected()) {
+                if (mFayeClient.isConnectedServer()) {
                     mFayeClient.disconnectServer();
                     sChannels.clear();
                 }
