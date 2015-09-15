@@ -2,7 +2,6 @@ package com.elirex.fayeclient;
 
 import android.app.ActivityManager;
 import android.app.Service;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -13,7 +12,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 
 /**
@@ -109,7 +107,7 @@ public class FayeService extends Service {
 
     private FayeClientListener mFayeClientListener = new FayeClientListener() {
         @Override
-        public void onConnectedToServer(FayeClient fc) {
+        public void onConnectedServer(FayeClient fc) {
             Log.i(LOG_TAG, "Connect to server");
             for(FayeServiceListener listener : mListeners) {
                 listener.onConnectedToServer(fc);
@@ -117,18 +115,18 @@ public class FayeService extends Service {
             Log.d(LOG_TAG, "FayeService channels.size() = " + sChannels.size());
             for(String channel : sChannels) {
                 Log.d(LOG_TAG, "Channel: " + channel);
-                fc.subscribeToChannel(channel);
+                fc.subscribeChannel(channel);
             }
         }
 
         @Override
-        public void onDisconnectedFromServer(FayeClient fc) {
+        public void onDisconnectedServer(FayeClient fc) {
             Log.i(LOG_TAG, "Disconnected form server");
-            fc.connectToServer();
+            fc.connectServer();
         }
 
         @Override
-        public void onMessageReceived(FayeClient fc, String msg) {
+        public void onReceivedMessage(FayeClient fc, String msg) {
             Log.i(LOG_TAG, "Message from server: " + msg);
             for(FayeServiceListener listener : mListeners) {
                 listener.onMessageReceived(fc, msg);
@@ -158,18 +156,17 @@ public class FayeService extends Service {
     private void startFayeClient() {
         mFayeClient = new FayeClient(sServerUrl, sMetaMessage);
         mFayeClient.setListener(mFayeClientListener);
-        mFayeClient.connectToServer();
+        mFayeClient.connectServer();
     }
 
     private void stopFayeClient() {
         HandlerThread thread = new HandlerThread("FayeTerminateHandlerThread");
         thread.start();
         new Handler(thread.getLooper()).post(new Runnable() {
-
             @Override
             public void run() {
                 if (mFayeClient.isWebsocketConnected()) {
-                    mFayeClient.disconnectFromServer();
+                    mFayeClient.disconnectServer();
                     sChannels.clear();
                 }
             }

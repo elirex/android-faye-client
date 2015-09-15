@@ -28,36 +28,36 @@ public class FayeClient {
 
     private WebSocket mWebSocket = null;
     private FayeClientListener mListener = null;
-    private HashSet<String> channels;
-    private String serverUrl = "";
-    private boolean fayeConnected = false;
-    private boolean webSocketConnected = false;
+    private HashSet<String> mChannels;
+    private String mServerUrl = "";
+    private boolean mFayeConnected = false;
+    private boolean mWebSocketConnected = false;
     private MetaMessage mMetaMessage;
-    private Handler messageHandler;
+    private Handler mMessageHandler;
 
     public FayeClient(String url, MetaMessage meta) {
-        serverUrl = url;
+        mServerUrl = url;
         mMetaMessage = meta;
-        channels = new HashSet<String>();
+        mChannels = new HashSet<String>();
     }
 
     {
         HandlerThread thread = new HandlerThread("FayeHandler");
         thread.start();
-        messageHandler = new Handler(thread.getLooper()) {
+        mMessageHandler = new Handler(thread.getLooper()) {
             @Override
             public void handleMessage(Message msg) {
                 super.handleMessage(msg);
                 switch(msg.what) {
                     case WebSocket.ON_OPEN:
                         Log.i(LOG_TAG, "onOpen() executed");
-                        webSocketConnected = true;
+                        mWebSocketConnected = true;
                         handShake();
                         break;
                     case WebSocket.ON_CLOSE:
                         Log.i(LOG_TAG, "onClosed() executed");
-                        webSocketConnected = false;
-                        fayeConnected = false;
+                        mWebSocketConnected = false;
+                        mFayeConnected = false;
                         if(mListener != null && mListener instanceof FayeClientListener) {
                             mListener.onDisconnectedServer(FayeClient.this);
                         }
@@ -85,56 +85,56 @@ public class FayeClient {
     }
 
     public void addChannel(String channel) {
-        channels.add(channel);
+        mChannels.add(channel);
     }
 
     public boolean isWebsocketConnected() {
-        return webSocketConnected;
+        return mWebSocketConnected;
     }
 
     public boolean isFayeConnected() {
-        return fayeConnected;
+        return mFayeConnected;
     }
 
-    public void connectToServer() {
+    public void connectServer() {
         openWebSocketConnection();
     }
 
-    public void disconnectFromServer() {
-        for(String channel : channels) {
+    public void disconnectServer() {
+        for(String channel : mChannels) {
             unsubscribe(channel);
         }
-        channels.clear();
+        mChannels.clear();
         disconnect();
     }
 
-    public void subscribeToChannel(String channel) {
-        channels.add(channel);
+    public void subscribeChannel(String channel) {
+        mChannels.add(channel);
         subscribe(channel);
     }
 
     public void subscribeToChannels(String... channels) {
         for(String channel : channels) {
-            this.channels.add(channel);
+            mChannels.add(channel);
             subscribe(channel);
         }
     }
 
-    public void unsubscribeFromChannel(String channel) {
-        if(channels.contains(channel)) {
+    public void unsubscribeChannel(String channel) {
+        if(mChannels.contains(channel)) {
             unsubscribe(channel);
-            channels.remove(channel);
+            mChannels.remove(channel);
         }
     }
 
-    public void unsubscribeFromChannels(String... channels) {
+    public void unsubscribeChannels(String... channels) {
         for(String channel : channels) {
             unsubscribe(channel);
         }
     }
 
-    public void unsubscribeFromAllChannels() {
-        for(String channel : channels) {
+    public void unsubscribeChannels() {
+        for(String channel : mChannels) {
             unsubscribe(channel);
         }
     }
@@ -172,8 +172,8 @@ public class FayeClient {
             mWebSocket.close();
         }
         try {
-            URI uri = new URI(serverUrl);
-            mWebSocket = new WebSocket(uri, messageHandler);
+            URI uri = new URI(mServerUrl);
+            mWebSocket = new WebSocket(uri, mMessageHandler);
             Log.d(LOG_TAG, "Scheme:" + uri.getScheme());
             if(uri.getScheme().equals("wss")) {
                 mWebSocket.setSocket(getSSLWebSocket());
@@ -267,7 +267,7 @@ public class FayeClient {
 
             if(channel.equals(MetaMessage.CONNECT_CHANNEL)) {
                 if(successful) {
-                    fayeConnected = true;
+                    mFayeConnected = true;
                     connect();
                 } else {
                     Log.e(LOG_TAG, "Connecting Error: " + obj.toString());
@@ -277,7 +277,7 @@ public class FayeClient {
 
             if(channel.equals(MetaMessage.DISCONNECT_CHANNEL)) {
                 if(successful) {
-                    fayeConnected = false;
+                    mFayeConnected = false;
                     closeWebSocketConnection();
                     if(mListener != null && mListener instanceof FayeClientListener) {
                         mListener.onDisconnectedServer(this);
@@ -291,7 +291,7 @@ public class FayeClient {
             if(channel.equals(MetaMessage.SUBSCRIBE_CHANNEL)) {
                 String subscription = obj.optString(MetaMessage.KEY_SUBSCRIPTION);
                 if(successful) {
-                    fayeConnected = true;
+                    mFayeConnected = true;
                     Log.i(LOG_TAG, "Subscribed channel " + subscription);
                 } else {
                     Log.e(LOG_TAG, "Subscribing channel " + subscription
@@ -311,7 +311,7 @@ public class FayeClient {
                 return;
             }
 
-            if(channels.contains(channel)) {
+            if(mChannels.contains(channel)) {
                 String data = obj.optString(MetaMessage.KEY_DATA);
                 if(data != null) {
                     if(mListener != null && mListener instanceof FayeClientListener) {
