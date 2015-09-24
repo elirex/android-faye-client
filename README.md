@@ -105,35 +105,42 @@ You can set handshake, connect, disconnect ,subscribe and unsubscribe's "ext" an
 The Meta Message detail you can look [Bayeux protocol](http://svn.cometd.org/trunk/bayeux/bayeux.html).
 ```java
 MetaMessage message = new MetaMessage();
-String ext = "{\"key\":\"sjaklfjdalijiejlaijfdlkj\"}";
-String id = "{\"user\":\"Tester\"}";
 // Set handshake's ext and id
-message.setHandshakeExt(ext);
-message.setHandshakeId(id);
+JSONObject jsonExt = new JSONObject();
+JSONObject jsonId = new JSONObject();
+try {
+    jsonExt.put("key", 123456);
+    jsonId.put("user", "abc");
+} catch(JSONExecption e) {
+
+}
+
+message.setHandshakeExt(jsonExt.toString());
+message.setHandshakeId(jsonExt.toString());
 // Set handshake's supportConnectionTypes field
 // Default supportConnectionTypes field includes "long-polling", "callback-polling", "websocket" and "iframe".
 String types[] = {"long-polling", callback-polling};
 message.setSupportConnectionTypes(types);
 
 // Set connect's ext and id
-message.setConnectExt(ext);
-message.setConnectId(id);
+message.setConnectExt(jsonExt.toString());
+message.setConnectId(jsonId.toString());
 
 // Set disconnect's ext and id
-message.setDisconnectExt(ext);
-message.setDisconnectId(id);
+message.setDisconnectExt(jsonExt.toString());
+message.setDisconnectId(jsonId.toString());
 
 // Set subscribe's ext and id
-message.setSubscribeExt(ext);
-message.setSubscribeId(id);
+message.setSubscribeExt(jsonExt.toString());
+message.setSubscribeId(jsonId.toString());
 
 // Set unsubscribe's ext and id
-message.setUnsubscribeExt(ext);
-message.setUnsubscribeId(id);
+message.setUnsubscribeExt(jsonExt.toString());
+message.setUnsubscribeId(jsonId.toString());
 
 // Set all ext and id, at once
-message.setAllExt(ext);
-message.setAllId(id);
+message.setAllExt(jsonExt.toString());
+message.setAllId(jsonId.toString());
 ```
 
 ## References
