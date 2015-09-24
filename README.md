@@ -65,9 +65,16 @@ if(mClient.isConnectedServer()) {
   mClient.publish("/channel-1", "The sample message");
 
   // Include ext and id
-  mClient.publich("/channel-2", "The message include ext and id", 
-          "{\"auth\": \"password\"}", 
-          "{\"user\":\"Tester\"}");
+  // Set handshake's ext and id
+  JSONObject jsonExt = new JSONObject();
+  JSONObject jsonId = new JSONObject();
+  try {
+    jsonExt.put("key", 123456);
+    jsonId.put("user", "abc");
+  } catch(JSONExecption e) {
+
+  }
+  mClient.publich("/channel-2", "The message include ext and id", jsonExt.toString(), jsonId.toString());
 }
 ```
 
