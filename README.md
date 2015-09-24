@@ -54,20 +54,20 @@ mClient.setListener(new FayeClientListener() {
 
 ```java
 if(mClient.isConnectedServer()) {
-	mClient.subscribeChannel("\channel-3");
+  mClient.subscribeChannel("\channel-3");
 }
 ```
 
 #### Publish message
 ```java
 if(mClient.isConnectedServer()) {
-	// Normal publish
-	mClient.publish("/channel-1", "The sample message");
+  // Normal publish
+  mClient.publish("/channel-1", "The sample message");
 
-	// Include ext and id
-	mClient.publich("/channel-2", "The message include ext and id", 
-					"{/"auth/": /"password/"}", 
-					"{/"user/":/"Tester/"}");
+  // Include ext and id
+  mClient.publich("/channel-2", "The message include ext and id", 
+          "{\"auth\": \"password\"}", 
+          "{\"user\":\"Tester\"}");
 }
 ```
 
@@ -77,7 +77,7 @@ if(mClient.isConnectedServer()) {
 mClient.unsubscribeChanne("/channel-1");
 
 // Unsubscribe multi-channels
-String channels[] = {"/channel-5", "/channel-2", "channel-4"};
+String channels[] = {"/channel-5", "/channel-2", "/channel-4"};
 mClient.unsubscribeChannels(channels);
 
 // Unsubscribe all channel
@@ -87,26 +87,26 @@ mClient.unsubscribeAll();
 #### Disconnect server
 ```java
 public void stopFayeClient() {
-	HandlerThread thread = new HandlerThread("TerminateThread");
-	thread.start();
-	new Handler(thread.getLooper()).post(new Runnable() {
-		@Override
-		public void run() {
-			if(mClient.isConnectedServer()) {
-				mClient.disconnectServer();
-			}
-		}
-	});
+  HandlerThread thread = new HandlerThread("TerminateThread");
+  thread.start();
+  new Handler(thread.getLooper()).post(new Runnable() {
+    @Override
+    public void run() {
+      if(mClient.isConnectedServer()) {
+        mClient.disconnectServer();
+      }
+    }
+  });
 }
 ```
 
 #### Setting Meta Messsage
-You can set handshake, connect, disconnect ,subscribe and unsubscribe's "ext" and "id" fields.	
+You can set handshake, connect, disconnect ,subscribe and unsubscribe's "ext" and "id" fields.  
 The Meta Message detail you can look [Bayeux protocol](http://svn.cometd.org/trunk/bayeux/bayeux.html).
 ```java
 MetaMessage message = new MetaMessage();
-String ext = "{/"key/":/"sjaklfjdalijiejlaijfdlkj/"}";
-String id = "{/"user/":/"Tester/"}";
+String ext = "{\"key\":\"sjaklfjdalijiejlaijfdlkj\"}";
+String id = "{\"user\":\"Tester\"}";
 // Set handshake's ext and id
 message.setHandshakeExt(ext);
 message.setHandshakeId(id);
