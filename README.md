@@ -65,7 +65,6 @@ if(mClient.isConnectedServer()) {
   mClient.publish("/channel-1", "The sample message");
 
   // Include ext and id
-  // Set handshake's ext and id
   JSONObject jsonExt = new JSONObject();
   JSONObject jsonId = new JSONObject();
   try {
