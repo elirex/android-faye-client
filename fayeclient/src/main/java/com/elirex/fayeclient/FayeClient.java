@@ -5,6 +5,11 @@ import android.os.HandlerThread;
 import android.os.Message;
 import android.util.Log;
 
+import com.elirex.fayeclient.rx.RxEvent;
+import com.elirex.fayeclient.rx.RxEventConnected;
+import com.elirex.fayeclient.rx.RxEventDisconnected;
+import com.elirex.fayeclient.rx.RxEventMessage;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,11 +18,13 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.channels.NotYetConnectedException;
-import java.util.Date;
 import java.util.HashSet;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
+
+import rx.Observable;
+import rx.Subscriber;
 
 /**
  * @author Sheng-Yuan Wang (2015/9/3).
@@ -174,7 +181,6 @@ public class FayeClient {
         try {
             URI uri = new URI(mServerUrl);
             mWebSocket = new WebSocket(uri, mMessageHandler);
-            Log.d(LOG_TAG, "Scheme:" + uri.getScheme());
             if(uri.getScheme().equals("wss")) {
                 mWebSocket.setSocket(getSSLWebSocket());
             }
@@ -211,7 +217,7 @@ public class FayeClient {
 
     private void unsubscribe(String channel) {
         try {
-            String unsubscribe = mMetaMessage.unsubscribe("/" + channel);
+            String unsubscribe = mMetaMessage.unsubscribe(channel);
             mWebSocket.send(unsubscribe);
             Log.i(LOG_TAG, "UnSubscribe:" + channel);
         } catch (JSONException e) {
@@ -277,11 +283,11 @@ public class FayeClient {
 
             if(channel.equals(MetaMessage.DISCONNECT_CHANNEL)) {
                 if(successful) {
-                    mFayeConnected = false;
-                    closeWebSocketConnection();
                     if(mListener != null && mListener instanceof FayeClientListener) {
                         mListener.onDisconnectedServer(this);
                     }
+                    mFayeConnected = false;
+                    closeWebSocketConnection();
                 } else {
                     Log.e(LOG_TAG, "Disconnecting Error: " + obj.toString());
                 }
@@ -312,7 +318,7 @@ public class FayeClient {
             }
 
             if(mChannels.contains(channel)) {
-                String data = obj.optString(MetaMessage.KEY_DATA);
+                String data = obj.optString(MetaMessage.KEY_DATA, null);
                 if(data != null) {
                     if(mListener != null && mListener instanceof FayeClientListener) {
                         mListener.onReceivedMessage(this, data);
@@ -322,8 +328,35 @@ public class FayeClient {
                 Log.e(LOG_TAG, "Cannot handle this message: " + obj.toString());
             }
             return;
-
         }
+    }
+
+    public Observable<RxEvent> observable() {
+        return Observable.create(new Observable.OnSubscribe<RxEvent>() {
+            @Override
+            public void call(final Subscriber<? super RxEvent> subscriber) {
+                FayeClientListener listener = new FayeClientListener() {
+                    @Override
+                    public void onConnectedServer(FayeClient fc) {
+                        RxEventConnected event = new RxEventConnected(fc);
+                        subscriber.onNext(event);
+                    }
+
+                    @Override
+                    public void onDisconnectedServer(FayeClient fc) {
+                        RxEventDisconnected event = new RxEventDisconnected(fc);
+                        subscriber.onNext(event);
+                    }
+
+                    @Override
+                    public void onReceivedMessage(FayeClient fc, String msg) {
+                        RxEventMessage event = new RxEventMessage(fc, msg);
+                        subscriber.onNext(event);
+                    }
+                };
+                setListener(listener);
+            }
+        });
     }
 
 }
