@@ -338,23 +338,39 @@ public class FayeClient {
                 FayeClientListener listener = new FayeClientListener() {
                     @Override
                     public void onConnectedServer(FayeClient fc) {
-                        RxEventConnected event = new RxEventConnected(fc);
-                        subscriber.onNext(event);
+                        if(subscriber.isUnsubscribed()) {
+                            Log.d(LOG_TAG, "1.unsubscribed()");
+                            setListener(null);
+                        } else {
+                            RxEventConnected event = new RxEventConnected(fc);
+                            subscriber.onNext(event);
+                        }
                     }
 
                     @Override
                     public void onDisconnectedServer(FayeClient fc) {
-                        RxEventDisconnected event = new RxEventDisconnected(fc);
-                        subscriber.onNext(event);
+                        if(subscriber.isUnsubscribed()) {
+                            Log.d(LOG_TAG, "2.unsubscribed()");
+                            setListener(null);
+                        } else {
+                            RxEventDisconnected event = new RxEventDisconnected(fc);
+                            subscriber.onNext(event);
+                        }
                     }
 
                     @Override
                     public void onReceivedMessage(FayeClient fc, String msg) {
-                        RxEventMessage event = new RxEventMessage(fc, msg);
-                        subscriber.onNext(event);
+                        if(subscriber.isUnsubscribed()) {
+                            Log.d(LOG_TAG, "3.unsubscribed()");
+                            setListener(null);
+                        } else {
+                            RxEventMessage event = new RxEventMessage(fc, msg);
+                            subscriber.onNext(event);
+                        }
                     }
                 };
                 setListener(listener);
+                connectServer();
             }
         });
     }
