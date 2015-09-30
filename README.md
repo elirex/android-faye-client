@@ -1,3 +1,4 @@
+[![GitHub version](http://img.shields.io/github/tag/elirex/android-faye-client.png)](https://github.com/elirex/android-faye-client)
 # Android Faye Client
 > This is a simple Faye Client for android. It can publish-subscribe messaging between Faye server.
 
@@ -5,6 +6,7 @@
 * SSL WebSocket connection
 * Subscribe multic-channel
 * Set the meta message
+* RxJava FayeClient
 
 ## Usage
 #### Setup FayeClient
@@ -147,6 +149,31 @@ message.setUnsubscribeId(jsonId.toString());
 // Set all ext and id, at once
 message.setAllExt(jsonExt.toString());
 message.setAllId(jsonId.toString());
+```
+
+## Reactive Usage
+```java
+// Connect to server
+FayeClient mClient = new FayeClient("wws://fayesample.com/fayeservice", meta);
+Subscription mSubscribe = mClient.observable(new Action1<RxEvent>() {
+	@Override
+	public void call(RxEvent event) {
+		if(event instanceof RxEventConnected) {
+			mClient.subscribeChannel("/channel-1");
+		}
+
+		if(event instanceof RxEventDisconnected) {
+			Log.d("FayeClient", "Disconnect to server");
+		}
+
+		if(event instanceof RxEventMessage) {
+			Log.d("FayeClient", ((RxEventMessage) event).message());
+		}
+	}
+});
+
+// Unsubscribe
+mSubscribe.unsubscribe();
 ```
 
 ## References
