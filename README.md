@@ -39,24 +39,24 @@ mClient.connectServer();;
 ```
 
 #### Subscribe channel
-You have two locations can subscribe channel.
+You have two locations can subscribe channel.	
 1. Subscribe channel in the onConnectedServer(). If FayeClient calls onConnectedServer() method that mean is FayeClient is connected the Faye Server.
 ```java
 mClient.setListener(new FayeClientListener() {
     @Override
     public void onConnectedServer(FayeClient fc) {
        Log.i(LOG_TAG, "Connected");
-       fc.subscribeChannel("\channel-1");
-       fc.subscribeChannel("\channel-2");
+       fc.subscribeChannel("/channel-1");
+       fc.subscribeChannel("/channel-2");
     }
     ...
 });
-```
+```    
 2. Subscribe channe not in onConnectedServer(). Through this way, you must be check FayeClient is connected the Faye Server.
 
 ```java
 if(mClient.isConnectedServer()) {
-  mClient.subscribeChannel("\channel-3");
+  mClient.subscribeChannel("/channel-3");
 }
 ```
 
